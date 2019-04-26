@@ -16,6 +16,13 @@ its enhanced features include the ability to generate data
 [frames](docs/frame.html) as well as the ability to 
 import and export JSON objects to and from CSV files and Google Sheets.
 
+## Install
+
+Available via pip `pip install py_dataset` or by downloading this repo and
+typing `python setup.py install`. This repo includes dataset shared C libraries
+compiled for Windows, Mac, and Linux and the appripriate library will be used
+automatically.
+
 ## Features
 
 [dataset](docs/dataset) supports 
