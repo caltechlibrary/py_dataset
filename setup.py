@@ -4,7 +4,7 @@
 #from site import getsitepackages
 #site_package_location = os.path.join(getsitepackages()[0], "dataset")
 
-from setuptools import find_packages, setup, Command
+from setuptools import setup, find_packages
 
 import sys
 import os
@@ -18,40 +18,6 @@ def read(fname):
     with open(fname, mode = "r", encoding = "utf-8") as f:
         src = f.read()
     return src
-
-class UploadCommand(Command):
-    """Support setup.py upload."""
-
-    description = 'Build and publish the package.'
-    user_options = []
-
-    @staticmethod
-    def status(s):
-        """Prints things in bold."""
-        print('\033[1m{0}\033[0m'.format(s))
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            self.status('Removing previous builds…')
-            rmtree(os.path.join(here, 'dist'))
-        except OSError:
-            pass
-
-        self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
-
-        #self.status('Uploading the package to PyPI via Twine…')
-        #os.system('twine upload dist/*')
-
-        sys.exit()
-
-#Prep package
 
 codemeta_json = "codemeta.json"
 if os.path.exists(codemeta_json) == False:
@@ -70,7 +36,6 @@ with open(codemeta_json, mode = "r", encoding = "utf-8") as f:
 
 # Let's make our symvar string
 version = meta["version"]
-#version = meta["version"]
 
 # Now we need to pull and format our author, author_email strings.
 author = ""
@@ -87,40 +52,44 @@ for obj in meta["author"]:
         author_email = email
     else:
         author_email = author_email + ", " + email
+description = meta['description']
+keywords = meta['keywords']
+url = meta['codeRepository']
+download = meta['downloadUrl']
+license = meta['license']
+name = meta['name']
 
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
-platform = os.uname().sysname
-shared_library_name = "libdataset.so"
-OS_Classifier = "Operating System :: POSIX :: Linux"
-if platform.startswith("Darwin"):
-    shared_library_name = "libdataset.dylib"
-    platform = "Mac OS X"
-    OS_Classifier = "Operating System :: MacOS :: MacOS X"
-elif platform.startswith("Win"):
-    shared_library_name = "libdataset.dll"
+platform = ""
+if sys.platform.startswith('win'):
+    shared_library_name = "lib/libdataset.dll"
     platform = "Windows"
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
+if sys.platform.startswith('linux'):
+    shared_library_name = "lib/libdataset.so"
+    OS_Classifier = "Operating System :: POSIX :: Linux"
+if sys.platform.startswith("darwin"):
+    shared_library_name = "lib/libdataset.dylib"
+    platform = "Mac OS X"
+    OS_Classifier = "Operating System :: MacOS :: MacOS X"
         
-if os.path.exists(os.path.join("dataset", shared_library_name)) == False:
-    print("Missing compiled shared library " + shared_library_name + " in dataset module")
+if os.path.exists(os.path.join(shared_library_name)) == False:
+    print("Missing compiled shared library " + shared_library_name )
     sys.exit(1)
 
 # Now that we know everything configure out setup
-setup(name = "dataset",
+setup(name = name,
     version = version,
-    description = "A python module for managing with JSON docs on local disc, in cloud storage",
+    description = description,
     long_description = read(readme_txt),
     author = author,
     author_email = author_email,
-    url = "https://caltechlibrary.github.io/dataset",
-    download_url = "https://github.com/caltechlibrary/dataset/latest/releases",
-    license = meta["license"],
+    url = url,
+    download_url = download,
+    license = license,
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests", "*_test.py"]),
-    package_data = {
-        '': [ '*.txt', '*.so', '*.dll', '*.dylib'],
-    },
-    platforms = [platform],
-    keywords = ["JSON", "CSV", "data science", "storage"],
+    data_files = [(name,[ shared_library_name, 'lib/libdataset.h'])],
+    keywords = keywords,
     include_package_data = True,
     classifiers = [
         "Development Status :: Alpha",
@@ -132,10 +101,8 @@ setup(name = "dataset",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: BSD License",
-        OS_Classifier
-    ],
-    # $ setup.py publish support.
-    cmdclass={
-        'upload': UploadCommand,
-    },
+        "Operating System :: Microsoft :: Windows :: Windows 10",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: MacOS :: MacOS X"
+    ]
 )

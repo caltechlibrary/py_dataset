@@ -2,11 +2,11 @@
     "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
     "@type": "SoftwareSourceCode",
     "description": "A command line tool for working with JSON documents on local disc, in an S3 bucket or on Google Sheets/Cloud Storage",
-    "name": "py-dataset",
-    "codeRepository": "https://github.com/caltechlibrary/py-dataset",
-    "issueTracker": "https://github.com/caltechlibrary/py-dataset/issues",
+    "name": "py_dataset",
+    "codeRepository": "https://github.com/caltechlibrary/py_dataset",
+    "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "0.0.51",
+    "version": "0.0.58",
     "author": [
         {
             "@type": "Person",
@@ -26,7 +26,7 @@
         }
     ],
     "developmentStatus": "active",
-    "downloadUrl": "https://github.com/caltechlibrary/py-dataset/releases",
+    "downloadUrl": "https://github.com/caltechlibrary/py_dataset/releases",
     "keywords": [
         "GitHub",
         "metadata",
