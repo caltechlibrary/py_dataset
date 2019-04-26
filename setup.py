@@ -4,32 +4,26 @@
 #from site import getsitepackages
 #site_package_location = os.path.join(getsitepackages()[0], "dataset")
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
+from shutil import rmtree, copyfile
 
 import sys
-import os
-import shutil
+import os,io
 import json
 
 readme_md = "README.md"
 readme_txt = "README.txt"
+codemeta_json = "codemeta.json"
 
 def read(fname):
     with open(fname, mode = "r", encoding = "utf-8") as f:
         src = f.read()
     return src
 
-codemeta_json = "codemeta.json"
 if os.path.exists(codemeta_json) == False:
-    shutil.copyfile(os.path.join("..", codemeta_json), codemeta_json)
+    copyfile(os.path.join("..", codemeta_json), codemeta_json)
 
-# If we're running sdist make sure our local codemeta.json is up to date!
-if "sdist" in sys.argv:
-    # Project Metadata and README
-    shutil.copyfile(os.path.join("..", codemeta_json),  codemeta_json)
-    shutil.copyfile(os.path.join("..", readme_md),  readme_txt)
-
-# Let's pickup as much metadata as we need from codemeta.json
+# Let's pickup as much metadata as we can from codemeta.json
 with open(codemeta_json, mode = "r", encoding = "utf-8") as f:
     src = f.read()
     meta = json.loads(src)
@@ -59,6 +53,29 @@ download = meta['downloadUrl']
 license = meta['license']
 name = meta['name']
 
+REQUIRES_PYTHON = '>=3.6.0'
+
+# What packages are required for this module to be executed?
+REQUIRED = []
+
+# What packages are optional?
+EXTRAS = {}
+
+# The rest you shouldn't have to touch too much :)
+# ------------------------------------------------
+# Except, perhaps the License and Trove Classifiers!
+# If you do change the License, remember to change the Trove Classifier for that!
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+# Import the README and use it as the long-description.
+# Note: this will only work if 'README.md' is present in your MANIFEST.in file!
+try:
+    with io.open(os.path.join(here, readme_md), encoding='utf-8') as f:
+        long_description = '\n' + f.read()
+except FileNotFoundError:
+    long_description = description
+
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
 platform = ""
 if sys.platform.startswith('win'):
@@ -77,11 +94,47 @@ if os.path.exists(os.path.join(shared_library_name)) == False:
     print("Missing compiled shared library " + shared_library_name )
     sys.exit(1)
 
+class UploadCommand(Command):
+    """Support setup.py upload."""
+
+    description = 'Build and publish the package.'
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print('\033[1m{0}\033[0m'.format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            self.status('Removing previous builds…')
+            rmtree(os.path.join(here, 'dist'))
+        except OSError:
+            pass
+
+        self.status('Building Source and Wheel (universal) distribution…')
+        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
+
+        self.status('Uploading the package to PyPI via Twine…')
+        os.system('twine upload dist/*')
+
+        sys.exit()
+
 # Now that we know everything configure out setup
 setup(name = name,
     version = version,
     description = description,
-    long_description = read(readme_txt),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    python_requires=REQUIRES_PYTHON,
+    install_requires=REQUIRED,
+    extras_require=EXTRAS,
     author = author,
     author_email = author_email,
     url = url,
@@ -104,5 +157,8 @@ setup(name = name,
         "Operating System :: Microsoft :: Windows :: Windows 10",
         "Operating System :: POSIX :: Linux",
         "Operating System :: MacOS :: MacOS X"
-    ]
+    ],
+    cmdclass={
+        'upload': UploadCommand,
+    }
 )

@@ -1,5 +1,43 @@
 
-# dataset module for Python 3
+# py_dataset   [![DOI](https://data.caltech.edu/badge/175684474.svg)](https://data.caltech.edu/badge/latestdoi/175684474)
+
+py_dataset is a Python wrapper for the [dataset](https://github.com/caltechlibrary/dataset) 
+command line tool, Go package, and  C shared library for working with 
+[JSON](https://en.wikipedia.org/wiki/JSON) objects as collections. 
+Collections can be stored on disc or in 
+Cloud Storage.  JSON objects are stored in collections as 
+plain UTF-8 text. This means the objects can be accessed with common 
+Unix text processing tools as well as most programming languages.
+
+This package wraps all [dataset](docs/dataset.html) operations such 
+as initialization of collections, creation, 
+reading, updating and deleting JSON objects in the collection. Some of 
+its enhanced features include the ability to generate data 
+[frames](docs/frame.html) as well as the ability to 
+import and export JSON objects to and from CSV files and Google Sheets.
+
+## Features
+
+[dataset](docs/dataset) supports 
+
+- Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
+- listing of collection [keys](docs/keys.html) (including filtering and sorting)
+- import/export  of [CSV](how-to/working-with-csv.html) files and [Google Sheets](how-to/working-with-gsheets.html)
+- An experimental full text [search](how-to/indexing-and-search.html) interface based on [Blevesearch](https://blevesearch.com)
+- The ability to reshape data by performing simple object [joins](docs/join.html)
+- The ability to create data [grids](docs/grid.html) and [frames](docs/frame.html) from collections based 
+  on keys lists and [dot paths](docs/dotpath.html) into the JSON objects stored
+
+### Limitations of _dataset_
+
+_dataset_ has many limitations, some are listed below
+
+- it is not a multi-process, multi-user data store (it's files on "disc" without locking)
+- it is not a replacement for a repository management system
+- it is not a general purpose database system
+- it does not supply version control on collections or objects
+
+## Tutorial
 
 This module provides the functionality of the _dataset_ command line tool as a Python 3.6 module.
 Once installed try out the following commands to see if everything is in order (or to get familier with
@@ -15,7 +53,7 @@ Start the tour by launching Python3 in interactive mode.
 Then run the following Python commands.
 
 ```python
-    import dataset
+    from py_dataset import dataset
     # Almost all the commands require the collection_name as first paramter, we're storing that name in c_name for convience.
     c_name = "a_tour_of_dataset.ds"
 
@@ -56,7 +94,7 @@ Then run the following Python commands.
     ok = dataset.update(c_name, key, new_record)
     if ok == False:
         print(dataset.error_message())
-    
+
     # Let's print out the record we stored using read method
     print(dataset.read(c_name, key)
 
@@ -69,6 +107,3 @@ Then run the following Python commands.
     cnt = dataset.count(c_name)
     print(cnt)
 ```
-
-
-

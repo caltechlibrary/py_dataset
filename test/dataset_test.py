@@ -2,9 +2,8 @@
 import sys
 import os
 import shutil
-import json
-import dataset
-import csv
+import json,csv
+from py_dataset import dataset
 
 #
 # test_basic(collection_name) runs tests on basic CRUD ops
@@ -763,7 +762,7 @@ def test_sync_gsheet(t, c_name):
         obj = json.loads(src)
         if 'gsheet_id' in obj:
             gsheet_id = obj['gsheet_id']
-    gsheet_name = 'test_sheet'
+    gsheet_name = 'Sheet1'
     cell_range = 'A1:Z100'
 
     for obj in t_data:
