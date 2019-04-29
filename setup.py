@@ -83,7 +83,7 @@ if sys.platform.startswith('win'):
     platform = "Windows"
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
 if sys.platform.startswith('linux'):
-    shared_library_name = "py_datasetlib/libdataset.so"
+    shared_library_name = "py_dataset/lib/libdataset.so"
     OS_Classifier = "Operating System :: POSIX :: Linux"
 if sys.platform.startswith("darwin"):
     shared_library_name = "py_dataset/lib/libdataset.dylib"
