@@ -23,7 +23,7 @@ import os
 import json
 
 # Figure out shared library extension
-go_basename = 'libdataset'
+go_basename = 'lib/libdataset'
 ext = '.so'
 if sys.platform.startswith('win'):
     ext = '.dll'

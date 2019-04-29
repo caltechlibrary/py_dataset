@@ -1,2 +1,5 @@
 test/credentials.json
 test/gsheet_test.json
+build
+dist
+py_dataset.egg-info

@@ -79,14 +79,14 @@ except FileNotFoundError:
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
 platform = ""
 if sys.platform.startswith('win'):
-    shared_library_name = "lib/libdataset.dll"
+    shared_library_name = "py_dataset/lib/libdataset.dll"
     platform = "Windows"
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
 if sys.platform.startswith('linux'):
-    shared_library_name = "lib/libdataset.so"
+    shared_library_name = "py_datasetlib/libdataset.so"
     OS_Classifier = "Operating System :: POSIX :: Linux"
 if sys.platform.startswith("darwin"):
-    shared_library_name = "lib/libdataset.dylib"
+    shared_library_name = "py_dataset/lib/libdataset.dylib"
     platform = "Mac OS X"
     OS_Classifier = "Operating System :: MacOS :: MacOS X"
         
@@ -118,8 +118,8 @@ class UploadCommand(Command):
         except OSError:
             pass
 
-        self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
+        self.status('Building Source and Wheel distribution…')
+        os.system('{0} setup.py sdist bdist_wheel '.format(sys.executable))
 
         self.status('Uploading the package to PyPI via Twine…')
         os.system('twine upload dist/*')
@@ -141,16 +141,14 @@ setup(name = name,
     download_url = download,
     license = license,
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests", "*_test.py"]),
-    data_files = [(name,[ shared_library_name, 'lib/libdataset.h'])],
+    package_data={name:['lib/libdataset.dll','lib/libdataset.so','lib/libdataset.h','lib/libdataset.dylib']},
     keywords = keywords,
-    include_package_data = True,
     classifiers = [
-        "Development Status :: Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Other",
-        "Programming Language :: Go",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
         "License :: OSI Approved :: BSD License",
