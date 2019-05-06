@@ -3,3 +3,4 @@ test/gsheet_test.json
 build
 dist
 py_dataset.egg-info
+py_dataset/__pycache__/
