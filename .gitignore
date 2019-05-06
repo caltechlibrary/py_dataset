@@ -4,3 +4,5 @@ build
 dist
 py_dataset.egg-info
 py_dataset/__pycache__/
+# test collections
+*.ds
