@@ -477,7 +477,7 @@ def read_list(collection_name, keys):
     if isinstance(rval, str):
         if rval == "":
             return [], error_message()
-        return json.loads(rval), ''
+        return json.loads(rval), error_message()
     return [], f"Can't read {keys} from {collection_name}, {error_message()}"
 
 
