@@ -445,7 +445,7 @@ def read(collection_name, key):
 # of records effeciently ...
 def read_list(collection_name, keys, clean_object = False):
     # Pack our keys as an array of string
-        clean_object_int = ctypes.c_int(0)
+    clean_object_int = ctypes.c_int(0)
     if clean_object == True:
         clean_object_int = ctypes.c_int(1)
     l = []
