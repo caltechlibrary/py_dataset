@@ -71,7 +71,7 @@ go_create_record.restype = ctypes.c_int
 
 go_read_record = lib.read_record
 # Args: collection_name (string), key (string), clean_object (int)
-go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.int]
+go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 # Returns: value (JSON source)
 go_read_record.restype = ctypes.c_char_p
 
