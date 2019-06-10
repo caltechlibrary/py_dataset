@@ -70,8 +70,8 @@ go_create_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_create_record.restype = ctypes.c_int
 
 go_read_record = lib.read_record
-# Args: collection_name (string), key (string)
-go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), clean_object (int)
+go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.int]
 # Returns: value (JSON source)
 go_read_record.restype = ctypes.c_char_p
 
@@ -79,8 +79,8 @@ go_read_record.restype = ctypes.c_char_p
 # of strings. So we will assume the array of keys has already been
 # transformed into JSON before calling go_read_list.
 go_read_record_list = lib.read_record_list
-# Args: collection_name (string), keys (list of strings AS JSON!!!)
-go_read_record_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (int)
+go_read_record_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 # Returns: value (JSON source)
 go_read_record_list.restype = ctypes.c_char_p
 
@@ -443,8 +443,11 @@ def read(collection_name, key):
 # Read a list of JSON records from a Dataset collection
 # NOTE: this provides dataset cli behavior for reading back a list
 # of records effeciently ...
-def read_list(collection_name, keys):
+def read_list(collection_name, keys, clean_object = False):
     # Pack our keys as an array of string
+        clean_object_int = ctypes.c_int(0)
+    if clean_object == True:
+        clean_object_int = ctypes.c_int(1)
     l = []
     for key in keys:
         if not isinstance(key, str):
@@ -452,7 +455,7 @@ def read_list(collection_name, keys):
         l.append(key)
     # Generate our JSON version of they key list
     keys_as_json = json.dumps(l)
-    value = go_read_record_list(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(keys_as_json.encode('utf-8')))
+    value = go_read_record_list(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(keys_as_json.encode('utf-8')), clean_object_int)
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()

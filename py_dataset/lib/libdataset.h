@@ -91,7 +91,7 @@ extern int has_key(char* p0, char* p1);
 
 extern int create_record(char* p0, char* p1, char* p2);
 
-extern char* read_record(char* p0, char* p1);
+extern char* read_record(char* p0, char* p1, int p2);
 
 // THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
 // undemensioned arrays of strings. So we will assume the array of
@@ -99,7 +99,7 @@ extern char* read_record(char* p0, char* p1);
 // read_list.
 //
 
-extern char* read_record_list(char* p0, char* p1);
+extern char* read_record_list(char* p0, char* p1, int p2);
 
 extern int update_record(char* p0, char* p1, char* p2);
 
