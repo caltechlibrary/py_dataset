@@ -126,24 +126,6 @@ go_count.argtypes = [ctypes.c_char_p]
 # Returns: value (int)
 go_count.restype = ctypes.c_int
 
-go_indexer = lib.indexer
-# Args: collection_name (string),  index_name (string), index_map_name (string), key_list (JSON array source), batch_size (int)
-go_indexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: true (1), false (0)
-go_indexer.restype = ctypes.c_int
-
-go_deindexer = lib.deindexer
-# Args: collection_name (string), index_name (string), key_list (JSON array source), batch_size (int)
-go_deindexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: true (1), false (0)
-go_deindexer.restype = ctypes.c_int
-
-go_find = lib.find
-# Args: index_names (JSON array source), query_string (string), options (JSON object source)
-go_find.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON array source)
-go_find.restype = ctypes.c_char_p
-
 # NOTE: this diverges from cli and reflects low level dataset organization
 #
 # import_csv - import a CSV file into a collection
@@ -245,8 +227,8 @@ go_repair.argtypes = [ctypes.c_char_p]
 go_repair.restype = ctypes.c_int
 
 go_attach = lib.attach
-# Args: collection_name (string), key (string), filepath (string)
-go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), semver (string), basename (string)
+go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_attach.restype = ctypes.c_int
 
@@ -257,14 +239,14 @@ go_attachments.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 go_attachments.restype = ctypes.c_char_p
 
 go_detach = lib.detach
-# Args: collection_name (string), key (string), filepaths (string)
-go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), semver (string), basename (string)
+go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_detach.restype = ctypes.c_int
 
 go_prune = lib.prune
-# Args: collection_name (string), key (string), filepaths (string)
-go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), semver (string) basename (string)
+go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_prune.restype = ctypes.c_int
 
@@ -543,41 +525,6 @@ def count(collection_name, filter = ''):
     return go_count(ctypes.c_char_p(collection_name.encode('utf8')))
 
 
-# Indexer takes a collection name, an index name, an index map file name, and an optional keylist 
-# and creates/updates a Bleve index on disc.
-def indexer(collection_name, index_name, index_map_name, key_list = [], batch_size = 0):
-    '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
-    key_list_src = json.dumps(key_list)
-    ok = go_indexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(index_map_name.encode('utf8')), ctypes.c_char_p(key_list_src.encode('utf8')), ctypes.c_int(batch_size))
-    if ok == 1:
-        return ''
-    return error_message()
-
-# Deindexer takes a collection name, an index name, key list and optional batch size deleting the provided keys from 
-# the index.
-def deindexer(collection_name, index_name, key_list, batch_size = 0):
-    '''indexes a collection given a collection name, bleve index name, index map filename, and optional key list'''
-    key_list_src = json.dumps(key_list).encode('utf8')
-    ok = go_deindexer(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(index_name.encode('utf8')), ctypes.c_char_p(key_list_src), ctypes.c_int(batch_size))
-    if ok == 1:
-        return ''
-    return error_message()
-
-# Find takes an index name, query string an optional options dict and returns a search result
-def find(index_names, query_string, options = {}):
-    '''Find takes an index name, query string an optional options dict and returns a search result'''
-    option_src = json.dumps(options)
-    err = ''
-    value = go_find(ctypes.c_char_p(index_names.encode('utf8')), ctypes.c_char_p(query_string.encode('utf8')), ctypes.c_char_p(option_src.encode('utf8')))
-    if not isinstance(value, bytes):
-        value = value.encode('utf8')
-    rval = value.decode()
-    err = error_message()
-    if rval == "":
-        return {}, err
-    return json.loads(rval), err
-
-
 #
 # import_csv - import a CSV file into a collection
 # syntax: COLLECTION CSV_FILENAME ID_COL
@@ -692,9 +639,9 @@ def repair(collection_name):
         return ''
     return error_message()
 
-def attach(collection_name, key, filenames = []):
+def attach(collection_name, key, semver, filenames = []):
     srcFNames = json.dumps(filenames).encode('utf8')
-    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(srcFNames))
+    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semvar.encode('utf8')), ctypes.c_char_p(srcFNames))
     if ok == 1:
         return ''
     return error_message()
@@ -708,16 +655,16 @@ def attachments(collection_name, key):
         return s.split("\n")
     return ''
 
-def detach(collection_name, key, filenames = []):
+def detach(collection_name, key, semver, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
-    ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
+    ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(fnames))
     if ok == 1:
         return ''
     return error_message()
 
-def prune(collection_name, key, filenames = []):
+def prune(collection_name, key, semver, filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
-    ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(fnames))
+    ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(fnames))
     if ok == 1:
         return ''
     return error_message()
