@@ -425,12 +425,15 @@ def create(collection_name, key, value):
     return error_message()
     
 # Read a JSON record from a Dataset collection
-def read(collection_name, key):
+def read(collection_name, key, clean_object = False):
     '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
+    clean_object_int = ctypes.c_int(0)
+    if clean_object == True:
+        clean_object_int = ctypes.c_int(1)
     if not isinstance(key, str) == True:
         key = f"{key}"
     value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), 
-            ctypes.c_char_p(key.encode('utf8')))
+            ctypes.c_char_p(key.encode('utf8')), clean_object_int)
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
