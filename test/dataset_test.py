@@ -141,47 +141,6 @@ def test_keys(t, collection_name):
     
 
 #
-# test_search(t, collection_name, index_map_name, index_name) tests indexer, deindexer and find funcitons
-#
-def test_search(t, collection_name, index_map_name, index_name):
-    '''test indexer, deindexer and find functions'''
-    #dataset.verbose_on()
-    if os.path.exists(index_name):
-        shutil.rmtree(index_name)
-    if os.path.exists(index_map_name):
-        os.remove(index_map_name)
-    
-    index_map = {
-        "title": {
-            "object_path": ".title"
-        },
-        "family": {
-            "object_path": ".authors[:].family"
-        },
-        "categories": {
-            "object_path": ".categories"
-        }
-    }
-    with open(index_map_name, 'w') as outfile:
-         json.dump(index_map, outfile, indent = 4, ensure_ascii = False)
-    
-    err = dataset.indexer(collection_name, index_name, index_map_name, batch_size = 2)
-    if err != '':
-        t.error("Failed to index", collection_name, ', ', err)
-    results, err = dataset.find(index_name, '+family:"Verne"')
-    if err != '':
-        t.error("Find failed for ", collection_name + ", "+err)
-        return
-    if results["total_hits"] != 2: 
-        t.print("Warning: unexpected results", json.dumps(results, indent = 4))
-    hits = results["hits"]
-    
-    k1 = hits[0]["id"]
-    err = dataset.deindexer(collection_name, index_name, [k1])
-    if err != '':
-        t.print("deindexer failed for key", k1, ', ', err)
-
-#
 # test_issue32() make sure issue 32 stays fixed.
 #
 def test_issue32(t, collection_name):
@@ -882,7 +841,6 @@ Python 'gsheet' test sequence.
     test_runner.add(test_setup, [collection_name])
     test_runner.add(test_basic, [collection_name])
     test_runner.add(test_keys, [collection_name])
-    test_runner.add(test_search, [collection_name, "test_index_map.json", "test_index.bleve"])
     test_runner.add(test_issue32, [collection_name])
     test_runner.add(test_attachments, [collection_name])
     test_runner.add(test_join, [collection_name])
