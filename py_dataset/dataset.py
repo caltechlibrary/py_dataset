@@ -645,7 +645,7 @@ def repair(collection_name):
         return ''
     return error_message()
 
-def attach(collection_name, key, semver, filenames = []):
+def attach(collection_name, key, semver = '', filenames = []):
     srcFNames = json.dumps(filenames).encode('utf8')
     ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semvar.encode('utf8')), ctypes.c_char_p(srcFNames))
     if ok == 1:
@@ -661,14 +661,14 @@ def attachments(collection_name, key):
         return s.split("\n")
     return ''
 
-def detach(collection_name, key, semver, filenames = []):
+def detach(collection_name, key, semver = '', filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(fnames))
     if ok == 1:
         return ''
     return error_message()
 
-def prune(collection_name, key, semver, filenames = []):
+def prune(collection_name, key, semver = '', filenames = []):
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(fnames))
     if ok == 1:
