@@ -18,17 +18,18 @@
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
 import ctypes
+import sys
 import os
-import json
 
 # Figure out shared library extension
-go_basename = 'libdataset'
-uname = os.uname().sysname
+go_basename = 'lib/libdataset'
 ext = '.so'
-if uname == 'Darwin':
-    ext = '.dylib'
-if uname == 'Windows':
+if sys.platform.startswith('win'):
     ext = '.dll'
+if sys.platform.startswith('darwin'):
+    ext = '.dylib'
+if sys.platform.startswith('linux'):
+    ext = '.so'
 
 # Find our shared library and load it
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -68,10 +69,19 @@ go_create_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_create_record.restype = ctypes.c_int
 
 go_read_record = lib.read_record
-# Args: collection_name (string), key (string)
-go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), clean_object (int)
+go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 # Returns: value (JSON source)
 go_read_record.restype = ctypes.c_char_p
+
+# THIS IS A HACK, ctypes doesn't **easily** support undemensioned arrays
+# of strings. So we will assume the array of keys has already been
+# transformed into JSON before calling go_read_list.
+go_read_record_list = lib.read_record_list
+# Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (int)
+go_read_record_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+# Returns: value (JSON source)
+go_read_record_list.restype = ctypes.c_char_p
 
 go_update_record = lib.update_record
 # Args: collection_name (string), key (string), value (JSON sourc)
@@ -115,24 +125,6 @@ go_count.argtypes = [ctypes.c_char_p]
 # Returns: value (int)
 go_count.restype = ctypes.c_int
 
-go_indexer = lib.indexer
-# Args: collection_name (string),  index_name (string), index_map_name (string), key_list (JSON array source), batch_size (int)
-go_indexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: true (1), false (0)
-go_indexer.restype = ctypes.c_int
-
-go_deindexer = lib.deindexer
-# Args: collection_name (string), index_name (string), key_list (JSON array source), batch_size (int)
-go_deindexer.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: true (1), false (0)
-go_deindexer.restype = ctypes.c_int
-
-go_find = lib.find
-# Args: index_names (JSON array source), query_string (string), options (JSON object source)
-go_find.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON array source)
-go_find.restype = ctypes.c_char_p
-
 # NOTE: this diverges from cli and reflects low level dataset organization
 #
 # import_csv - import a CSV file into a collection
@@ -158,6 +150,8 @@ go_export_csv = lib.export_csv
 go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_csv.restype = ctypes.c_int
 
+
+
 # NOTE: this diverges from the cli and uses libdataset.go bindings
 # import_gsheet - import a GSheet into a collection
 # syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
@@ -172,6 +166,7 @@ go_import_gsheet = lib.import_gsheet
 go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
 go_import_gsheet.restype = ctypes.c_int
 
+
 # NOTE: this diverges from the cli and uses the libdataset.go bindings
 # export_gsheet - export collection objects to a GSheet
 # syntax examples: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
@@ -180,6 +175,26 @@ go_import_gsheet.restype = ctypes.c_int
 go_export_gsheet = lib.export_gsheet
 go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 go_export_gsheet.restype = ctypes.c_int
+
+# NOTE: go_sync_* diverges from cli in that it separates the functions
+# specifically for CSV files and GSheets.
+#
+# Returns: true (1), false (0)
+go_sync_recieve_csv = lib.sync_recieve_csv
+go_sync_recieve_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_recieve_csv.restype = ctypes.c_int
+
+go_sync_send_csv = lib.sync_send_csv
+go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_send_csv.restype = ctypes.c_int
+
+go_sync_recieve_gsheet = lib.sync_recieve_gsheet
+go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_recieve_gsheet.restype = ctypes.c_int
+
+go_sync_send_gsheet = lib.sync_send_gsheet
+go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_sync_send_gsheet.restype = ctypes.c_int
 
 go_status = lib.status
 # Returns: true (1), false (0)
@@ -211,8 +226,8 @@ go_repair.argtypes = [ctypes.c_char_p]
 go_repair.restype = ctypes.c_int
 
 go_attach = lib.attach
-# Args: collection_name (string), key (string), filepath (string)
-go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), semver (string), basename (string)
+go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_attach.restype = ctypes.c_int
 
@@ -223,14 +238,14 @@ go_attachments.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 go_attachments.restype = ctypes.c_char_p
 
 go_detach = lib.detach
-# Args: collection_name (string), key (string), filepaths (string)
-go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), semver (string), basename (string)
+go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_detach.restype = ctypes.c_int
 
 go_prune = lib.prune
-# Args: collection_name (string), key (string), filepaths (string)
-go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Args: collection_name (string), key (string), semver (string) basename (string)
+go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_prune.restype = ctypes.c_int
 
@@ -295,5 +310,4 @@ go_delete_frame = lib.delete_frame
 go_delete_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
 go_delete_frame.restype = ctypes.c_int
-
 
