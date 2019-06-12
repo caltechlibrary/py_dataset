@@ -260,7 +260,7 @@ def test_attachments(t, collection_name):
             t.error("Failed, expected", fname, "to be detached from", collection_name, key)
 
     # Test detaching all files
-    err = dataset.detach(collection_name, key)
+    err = dataset.detach(collection_name, key, [])
     if err != '':
         t.error("Failed, expected True for (detaching all)", collection_name, key, ', ', err)
     for fname in filenames:
@@ -276,7 +276,7 @@ def test_attachments(t, collection_name):
     if len(l) != 1:
         t.error("Failed, expected one file after prune for", collection_name, key, [filenames[0]], "got", l)
 
-    err = dataset.prune(collection_name, key)
+    err = dataset.prune(collection_name, key, [])
     if err != '':
         t.error("Failed, expected True for prune (all)", collection_name, key, ', ', err)
     l = dataset.attachments(collection_name, key)
