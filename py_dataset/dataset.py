@@ -647,7 +647,8 @@ def repair(collection_name):
 
 def attach(collection_name, key, semver = '', filenames = []):
     srcFNames = json.dumps(filenames).encode('utf8')
-    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semvar.encode('utf8')), ctypes.c_char_p(srcFNames))
+    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')),
+            ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(srcFNames))
     if ok == 1:
         return ''
     return error_message()
