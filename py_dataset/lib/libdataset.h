@@ -85,13 +85,13 @@ extern void verbose_off();
 
 extern char* dataset_version();
 
-extern int init_collection(char* p0, int p1);
+extern int init_collection(char* p0);
 
 extern int has_key(char* p0, char* p1);
 
 extern int create_record(char* p0, char* p1, char* p2);
 
-extern char* read_record(char* p0, char* p1);
+extern char* read_record(char* p0, char* p1, int p2);
 
 // THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
 // undemensioned arrays of strings. So we will assume the array of
@@ -99,7 +99,7 @@ extern char* read_record(char* p0, char* p1);
 // read_list.
 //
 
-extern char* read_record_list(char* p0, char* p1);
+extern char* read_record_list(char* p0, char* p1, int p2);
 
 extern int update_record(char* p0, char* p1, char* p2);
 
@@ -114,12 +114,6 @@ extern char* key_filter(char* p0, char* p1, char* p2);
 extern char* key_sort(char* p0, char* p1, char* p2);
 
 extern int count(char* p0);
-
-extern int indexer(char* p0, char* p1, char* p2, char* p3, int p4);
-
-extern int deindexer(char* p0, char* p1, char* p2, int p3);
-
-extern char* find(char* p0, char* p1, char* p2);
 
 // import_csv - import a CSV file into a collection
 // syntax: COLLECTION CSV_FILENAME ID_COL
@@ -165,13 +159,13 @@ extern int check(char* p0);
 
 extern int repair(char* p0);
 
-extern int attach(char* p0, char* p1, char* p2);
+extern int attach(char* p0, char* p1, char* p2, char* p3);
 
 extern char* attachments(char* p0, char* p1);
 
-extern int detach(char* p0, char* p1, char* p2);
+extern int detach(char* p0, char* p1, char* p2, char* p3);
 
-extern int prune(char* p0, char* p1, char* p2);
+extern int prune(char* p0, char* p1, char* p2, char* p3);
 
 extern int clone(char* p0, char* p1, char* p2);
 
