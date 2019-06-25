@@ -17,18 +17,15 @@
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
-import ctypes
-import sys
-import os
 import json
+import ctypes
 
-from .libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_frame_labels , go_delete_frame , go_frame_grid , go_frame_objects 
+from py_dataset.libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_frame_labels , go_delete_frame , go_frame_grid , go_frame_objects 
 
 #
 # These are our Python idiomatic functions
 # calling the C type wrapped functions in libdataset.py
 #
-
 def error_message():
     value = go_error_message()
     if not isinstance(value, bytes):
@@ -357,7 +354,7 @@ def repair(collection_name):
         return ''
     return error_message()
 
-def attach(collection_name, key, semver = '', filenames = []):
+def attach(collection_name, key, filenames = [], semver = ''):
     if semver == '':
         semver = 'v0.0.0'
     srcFNames = json.dumps(filenames)
@@ -377,19 +374,20 @@ def attachments(collection_name, key):
         return s.split("\n")
     return ''
 
-def detach(collection_name, key, semver = '', filenames = []):
+def detach(collection_name, key, filenames = [], semver = ''):
+    '''Get attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to get all attachments'''
     if semver == '':
         semver = 'v0.0.0'
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
-    print(f"DEBUG type of key {type(key)}, of semver {type(semver)}, srcFNames {type(srcFNames)}")
     ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(srcFNames))
     if ok == 1:
         return ''
     return error_message()
 
-def prune(collection_name, key, semver = '', filenames = []):
+def prune(collection_name, key, filenames = [], semver = ''):
+    '''Delete attachments for a specific key.  If the version semver is not provided, it will default to the current version.  Provide [] as filenames if you want to delete all attachments'''
     if semver == '':
         semver = 'v0.0.0'
     fnames = json.dumps(filenames).encode('utf8')

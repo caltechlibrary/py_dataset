@@ -224,7 +224,7 @@ def test_attachments(t, collection_name):
         return
 
     key = keys[0]
-    err = dataset.attach(collection_name, key, filenames = filenames)
+    err = dataset.attach(collection_name, key, filenames)
     if err != '':
         t.error("Failed, to attach files for", collection_name, key, filenames, ', ', err)
         return
@@ -240,7 +240,7 @@ def test_attachments(t, collection_name):
         os.remove(filenames[1])
 
     # First try detaching one file.
-    err = dataset.detach(collection_name, key, filenames = [filenames[1]])
+    err = dataset.detach(collection_name, key, [filenames[1]])
     if err != '':
         t.error("Failed, expected True for", collection_name, key, filenames[1], ', ', err)
     if os.path.exists(filenames[1]):
@@ -249,7 +249,7 @@ def test_attachments(t, collection_name):
         t.error("Failed to detch", filenames[1], "from", collection_name, key)
 
     # Test explicit filenames detch
-    err = dataset.detach(collection_name, key, filenames = filenames)
+    err = dataset.detach(collection_name, key, filenames)
     if err != '':
         t.error("Failed, expected True for", collection_name, key, filenames, ', ', err)
 
@@ -260,7 +260,7 @@ def test_attachments(t, collection_name):
             t.error("Failed, expected", fname, "to be detached from", collection_name, key)
 
     # Test detaching all files
-    err = dataset.detach(collection_name, key)
+    err = dataset.detach(collection_name, key, [])
     if err != '':
         t.error("Failed, expected True for (detaching all)", collection_name, key, ', ', err)
     for fname in filenames:
@@ -269,14 +269,14 @@ def test_attachments(t, collection_name):
         else:
             t.error("Failed, expected", fname, "for detaching all from", collection_name, key)
 
-    err = dataset.prune(collection_name, key, filenames = [filenames[0]])
+    err = dataset.prune(collection_name, key, [filenames[0]])
     if err != '':
         t.error("Failed, expected True for prune", collection_name, key, [filenames[0]], ', ', err)
     l = dataset.attachments(collection_name, key)
     if len(l) != 1:
         t.error("Failed, expected one file after prune for", collection_name, key, [filenames[0]], "got", l)
 
-    err = dataset.prune(collection_name, key)
+    err = dataset.prune(collection_name, key, [])
     if err != '':
         t.error("Failed, expected True for prune (all)", collection_name, key, ', ', err)
     l = dataset.attachments(collection_name, key)
