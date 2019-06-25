@@ -224,7 +224,7 @@ def test_attachments(t, collection_name):
         return
 
     key = keys[0]
-    err = dataset.attach(collection_name, key, filenames)
+    err = dataset.attach(collection_name, key, filenames = filenames)
     if err != '':
         t.error("Failed, to attach files for", collection_name, key, filenames, ', ', err)
         return
@@ -240,7 +240,7 @@ def test_attachments(t, collection_name):
         os.remove(filenames[1])
 
     # First try detaching one file.
-    err = dataset.detach(collection_name, key, [filenames[1]])
+    err = dataset.detach(collection_name, key, filenames = [filenames[1]])
     if err != '':
         t.error("Failed, expected True for", collection_name, key, filenames[1], ', ', err)
     if os.path.exists(filenames[1]):
@@ -249,7 +249,7 @@ def test_attachments(t, collection_name):
         t.error("Failed to detch", filenames[1], "from", collection_name, key)
 
     # Test explicit filenames detch
-    err = dataset.detach(collection_name, key, filenames)
+    err = dataset.detach(collection_name, key, filenames = filenames)
     if err != '':
         t.error("Failed, expected True for", collection_name, key, filenames, ', ', err)
 
@@ -269,7 +269,7 @@ def test_attachments(t, collection_name):
         else:
             t.error("Failed, expected", fname, "for detaching all from", collection_name, key)
 
-    err = dataset.prune(collection_name, key, [filenames[0]])
+    err = dataset.prune(collection_name, key, filenames = [filenames[0]])
     if err != '':
         t.error("Failed, expected True for prune", collection_name, key, [filenames[0]], ', ', err)
     l = dataset.attachments(collection_name, key)
@@ -429,7 +429,7 @@ def test_issue43(t, collection_name, csv_name):
     frame_name = 'f1'
     keys = dataset.keys(collection_name)
     (f1, err) = dataset.frame(collection_name, frame_name, keys, 
-        ["._Key",".c1",".c2",".c3",".c4"])
+        ["._Key",".c1",".c2",".c3",".c4"], ["_Key", "c1", "c2", "c3", "c4"])
     if err != '':
         t.error(err)
         return
@@ -494,12 +494,13 @@ def test_frame(t, c_name):
     ]
     keys = []
     dot_paths = ["._Key", ".one", ".two", ".three", ".four"]
+    labels = ["_Key", "one", "two", "three", "four"]
     for row in data:
         key = row['id']
         keys.append(key)
         err = dataset.create(c_name, key, row)
     f_name = 'f1'
-    (g, err) = dataset.frame(c_name, f_name, keys, dot_paths)
+    (g, err) = dataset.frame(c_name, f_name, keys, dot_paths, labels)
     if err != '':
         t.error(err)
     err = dataset.reframe(c_name, f_name)
@@ -560,7 +561,7 @@ def test_sync_csv(t, c_name):
     # Setup frame
     frame_name = 'test_sync'
     keys = dataset.keys(c_name)
-    (frame, err) = dataset.frame(c_name, frame_name, keys, ["._Key", ".value"] )
+    (frame, err) = dataset.frame(c_name, frame_name, keys, ["._Key", ".value"], ["_Key", "value"] )
     if err != '':
         t.error(err)
         return
@@ -649,7 +650,7 @@ def test_basic_gsheet(t, collection_name):
 
     if dataset.has_frame(collection_name, frame_name):
         dataset.delete_frame(collection_name, frame_name)
-    (f1, err) = dataset.frame(collection_name, frame_name, keys, dot_exprs)
+    (f1, err) = dataset.frame(collection_name, frame_name, keys, dot_exprs, column_names)
     if err != '':
         t.error(err)
         return
@@ -731,7 +732,7 @@ def test_sync_gsheet(t, c_name):
             return
 
     f_name = 'test_sync'
-    frame, err = dataset.frame(c_name, f_name, ['one', 'two', 'three'], ['_Key', 'value'])
+    frame, err = dataset.frame(c_name, f_name, ['._Key', '.value'], ["_Key", "value"])
     if err != '':
         t.error(err)
         return

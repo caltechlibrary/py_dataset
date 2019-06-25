@@ -343,6 +343,14 @@ extern int sync_send_gsheet(char* p0, char* p1, char* p2, char* p3, char* p4, in
 
 extern int sync_recieve_gsheet(char* p0, char* p1, char* p2, char* p3, char* p4, int p5);
 
+// frame_grid takes a frames object list and returns a grid
+// (2D JSON array) representation of the object list.
+// If the "header row" value is 1 a header row of labels is
+// included, otherwise it is only the values of returned in the grid.
+//
+
+extern char* frame_grid(char* p0, char* p1, int p2);
+
 // frame_objects returns a copy of a frame's object list as an
 // array of objects in JSON source. The array is ordered, the attributes
 // in the objects are not ordered.

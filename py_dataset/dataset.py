@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # 
-# py/dataset.go is a C shared library targetting support in Python for dataset
+# py_dataset is a wrapper around our C-Shared library of libdataset.
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
-# Copyright (c) 2018, Caltech
+# Copyright (c) 2019, Caltech
 # All rights not granted herein are expressly reserved by Caltech.
 # 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,299 +22,11 @@ import sys
 import os
 import json
 
-# Figure out shared library extension
-go_basename = 'lib/libdataset'
-ext = '.so'
-if sys.platform.startswith('win'):
-    ext = '.dll'
-if sys.platform.startswith('darwin'):
-    ext = '.dylib'
-if sys.platform.startswith('linux'):
-    ext = '.so'
-
-# Find our shared library and load it
-dir_path = os.path.dirname(os.path.realpath(__file__))
-lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
-
-# Setup our Go functions to be nicely wrapped
-go_error_message = lib.error_message
-go_error_message.restype = ctypes.c_char_p
-
-go_use_strict_dotpath = lib.use_strict_dotpath
-# Args: is 1 (true) or 0 (false)
-go_use_strict_dotpath.argtypes = [ctypes.c_int]
-go_use_strict_dotpath.restype = ctypes.c_int
-
-go_version = lib.dataset_version
-go_version.restype = ctypes.c_char_p
-
-go_is_verbose = lib.is_verbose
-go_is_verbose.restype = ctypes.c_int
-
-go_verbose_on = lib.verbose_on
-go_verbose_on.restype = ctypes.c_int
-
-go_verbose_off = lib.verbose_off
-go_verbose_off.restype = ctypes.c_int
-
-go_init = lib.init_collection
-# Args: collection_name (string), layout (int - 0 UNKNOWN, 1 BUCKETS, 2 PAIRTREE)
-go_init.argtypes = [ctypes.c_char_p, ctypes.c_int]
-# Returns: true (1), false (0)
-go_init.restype = ctypes.c_int
-
-go_create_record = lib.create_record
-# Args: collection_name (string), key (string), value (JSON source)
-go_create_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_create_record.restype = ctypes.c_int
-
-go_read_record = lib.read_record
-# Args: collection_name (string), key (string), clean_object (int)
-go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: value (JSON source)
-go_read_record.restype = ctypes.c_char_p
-
-# THIS IS A HACK, ctypes doesn't **easily** support undemensioned arrays
-# of strings. So we will assume the array of keys has already been
-# transformed into JSON before calling go_read_list.
-go_read_record_list = lib.read_record_list
-# Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (int)
-go_read_record_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: value (JSON source)
-go_read_record_list.restype = ctypes.c_char_p
-
-go_update_record = lib.update_record
-# Args: collection_name (string), key (string), value (JSON sourc)
-go_update_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_update_record.restype = ctypes.c_int
-
-go_delete_record = lib.delete_record
-# Args: collection_name (string), key (string)
-go_delete_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_delete_record.restype = ctypes.c_int
-
-go_has_key = lib.has_key
-# Args: collection_name (string), key (string)
-go_has_key.argtypes = [ctypes.c_char_p,ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_has_key.restype = ctypes.c_int
-
-go_keys = lib.keys
-# Args: collection_name (string), filter_expr (string), sort_expr (string)
-go_keys.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON source)
-go_keys.restype = ctypes.c_char_p
-
-go_key_filter = lib.key_filter
-# Args: collection_name (string), key_list (JSON array source), filter_expr (string)
-go_key_filter.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON source)
-go_key_filter.restype = ctypes.c_char_p
-
-go_key_sort = lib.key_sort
-# Args: collection_name (string), key_list (JSON array source), sort order (string)
-go_key_sort.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON source)
-go_key_sort.restype = ctypes.c_char_p
-
-go_count = lib.count
-# Args: collection_name (string)
-go_count.argtypes = [ctypes.c_char_p]
-# Returns: value (int)
-go_count.restype = ctypes.c_int
-
-# NOTE: this diverges from cli and reflects low level dataset organization
-#
-# import_csv - import a CSV file into a collection
-# syntax: COLLECTION CSV_FILENAME ID_COL
-# 
-# options that should support sensible defaults:
-#
-#      UseHeaderRow (bool, 1 true, 0 false)
-#      Overwrite (bool, 1 true, 0 false)
-# 
-# Returns: true (1), false (0)
-go_import_csv = lib.import_csv
-go_import_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-go_import_csv.restype = ctypes.c_int
-
-# NOTE: this diverges from cli and uses libdataset.go bindings
-#
-# export_csv - export collection objects to a CSV file
-# syntax examples: COLLECTION FRAME CSV_FILENAME
-# 
-# Returns: true (1), false (0)
-go_export_csv = lib.export_csv
-go_export_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-go_export_csv.restype = ctypes.c_int
-
-
-
-# NOTE: this diverges from the cli and uses libdataset.go bindings
-# import_gsheet - import a GSheet into a collection
-# syntax: COLLECTION GSHEET_ID SHEET_NAME ID_COL CELL_RANGE
-# 
-# options that should support sensible defaults:
-#
-#      UseHeaderRow
-#      Overwrite
-#
-# Returns: true (1), false (0)
-go_import_gsheet = lib.import_gsheet
-go_import_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int]
-go_import_gsheet.restype = ctypes.c_int
-
-
-# NOTE: this diverges from the cli and uses the libdataset.go bindings
-# export_gsheet - export collection objects to a GSheet
-# syntax examples: COLLECTION FRAME GSHEET_ID GSHEET_NAME CELL_RANGE
-#
-# Returns: true (1), false (0)
-go_export_gsheet = lib.export_gsheet
-go_export_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-go_export_gsheet.restype = ctypes.c_int
-
-# NOTE: go_sync_* diverges from cli in that it separates the functions
-# specifically for CSV files and GSheets.
-#
-# Returns: true (1), false (0)
-go_sync_recieve_csv = lib.sync_recieve_csv
-go_sync_recieve_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_recieve_csv.restype = ctypes.c_int
-
-go_sync_send_csv = lib.sync_send_csv
-go_sync_send_csv.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_send_csv.restype = ctypes.c_int
-
-go_sync_recieve_gsheet = lib.sync_recieve_gsheet
-go_sync_recieve_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_recieve_gsheet.restype = ctypes.c_int
-
-go_sync_send_gsheet = lib.sync_send_gsheet
-go_sync_send_gsheet.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-go_sync_send_gsheet.restype = ctypes.c_int
-
-go_status = lib.status
-# Returns: true (1), false (0)
-go_status.restype = ctypes.c_int
-
-go_list = lib.list
-# Args: collection_name (string), key list (JSON array source)
-go_list.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON Array of Objects source)
-go_list.restype = ctypes.c_char_p
-
-# FIXME: for Python library only accept single return a single key's path
-go_path = lib.path
-# Args: collection_name (string), key (string)
-go_path.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Retrusn: value (string)
-go_path.restype = ctypes.c_char_p
-
-go_check = lib.check
-# Args: collection_name (string)
-go_check.argtypes = [ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_check.restype = ctypes.c_int
-
-go_repair = lib.repair
-# Args: collection_name (string)
-go_repair.argtypes = [ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_repair.restype = ctypes.c_int
-
-go_attach = lib.attach
-# Args: collection_name (string), key (string), semver (string), basename (string)
-go_attach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_attach.restype = ctypes.c_int
-
-go_attachments = lib.attachments
-# Args: collection_name (string), key (string)
-go_attachments.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_attachments.restype = ctypes.c_char_p
-
-go_detach = lib.detach
-# Args: collection_name (string), key (string), semver (string), basename (string)
-go_detach.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_detach.restype = ctypes.c_int
-
-go_prune = lib.prune
-# Args: collection_name (string), key (string), semver (string) basename (string)
-go_prune.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_prune.restype = ctypes.c_int
-
-go_join = lib.join
-# Args: collection_name (string), key (string), value (JSON source), overwrite (1: true, 0: false)
-go_join.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
-# Returns: true (1), false (0)
-go_join.restype = ctypes.c_int
-
-go_clone = lib.clone
-# Args: collection_name (string), new_collection_name (string), ????
-go_clone.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_clone.restype = ctypes.c_int
-
-go_clone_sample = lib.clone_sample
-# Args: collection_name (string), new_sample_collection_name (string), new_rest_collection_name (string), sample size ????
-go_clone_sample.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int ]
-# Returns: true (1), false (0)
-go_clone_sample.restype = ctypes.c_int
-
-go_grid = lib.grid
-# Args: collection_name (string), keys??? (JSON source), dotpaths???? (JSON source)
-go_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON 2D array source)
-go_grid.restype = ctypes.c_char_p
-
-go_frame = lib.frame
-# Args: collection_name (string), frame_name (string), keys??? (JSON source), dotpaths???? (JSON source)
-go_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON object source)
-go_frame.restype = ctypes.c_char_p
-
-go_has_frame = lib.has_frame
-# Args: collection_name (string), fame_name (string)
-go_has_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_has_frame.restype = ctypes.c_int
-
-go_frames = lib.frames
-# Args: collection_name)
-go_frames.argtypes = [ctypes.c_char_p]
-# Returns: frame names (JSON Array Source)
-go_frames.restype = ctypes.c_char_p
-
-# FIXME: This changed in cli...
-go_reframe = lib.reframe
-# Args: collection_name (string), frame_name (string), keys??? (JSON source)
-go_reframe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: value (JSON object source)
-go_reframe.restype = ctypes.c_int
-
-go_frame_labels = lib.frame_labels
-# Args: collection_name (string), frame_name (string), label_values (JSON array of string source)
-go_frame_labels.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_frame_labels.restype = ctypes.c_int
-
-
-go_delete_frame = lib.delete_frame
-# Args: collection_name (string), frame_name (string)
-go_delete_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_delete_frame.restype = ctypes.c_int
-
+from .libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_frame_labels , go_delete_frame , go_frame_grid , go_frame_objects 
 
 #
-# Now write our Python idiomatic function
+# These are our Python idiomatic functions
+# calling the C type wrapped functions in libdataset.py
 #
 
 def error_message():
@@ -646,8 +358,12 @@ def repair(collection_name):
     return error_message()
 
 def attach(collection_name, key, semver = '', filenames = []):
-    srcFNames = json.dumps(filenames).encode('utf8')
-    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semvar.encode('utf8')), ctypes.c_char_p(srcFNames))
+    if semver == '':
+        semver = 'v0.0.0'
+    srcFNames = json.dumps(filenames)
+    if not isinstance(srcFNames, bytes):
+        srcFNames = srcFNames.encode('utf8')
+    ok = go_attach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(srcFNames))
     if ok == 1:
         return ''
     return error_message()
@@ -662,13 +378,20 @@ def attachments(collection_name, key):
     return ''
 
 def detach(collection_name, key, semver = '', filenames = []):
-    fnames = json.dumps(filenames).encode('utf8')
-    ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(fnames))
+    if semver == '':
+        semver = 'v0.0.0'
+    srcFNames = json.dumps(filenames)
+    if not isinstance(srcFNames, bytes):
+        srcFNames = srcFNames.encode('utf8')
+    print(f"DEBUG type of key {type(key)}, of semver {type(semver)}, srcFNames {type(srcFNames)}")
+    ok = go_detach(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(srcFNames))
     if ok == 1:
         return ''
     return error_message()
 
 def prune(collection_name, key, semver = '', filenames = []):
+    if semver == '':
+        semver = 'v0.0.0'
     fnames = json.dumps(filenames).encode('utf8')
     ok = go_prune(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(semver.encode('utf8')), ctypes.c_char_p(fnames))
     if ok == 1:
@@ -708,13 +431,15 @@ def grid(collection_name, keys, dot_paths):
         return [], error_message()
     return json.loads(value), ''
 
-def frame(collection_name, frame_name, keys = [], dot_paths = []):
+def frame(collection_name, frame_name, keys = [], dot_paths = [], labels = []):
     src_keys = json.dumps(keys)
     src_dot_paths = json.dumps(dot_paths)
+    src_labels = json.dumps(labels)
     value = go_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')),
         ctypes.c_char_p(src_keys.encode('utf-8')),
-        ctypes.c_char_p(src_dot_paths.encode('utf-8')))
+        ctypes.c_char_p(src_dot_paths.encode('utf-8')),
+        ctypes.c_char_p(src_labels.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     if value == None or value.strip() == '':
@@ -761,6 +486,27 @@ def delete_frame(collection_name, frame_name):
         return ''
     return error_message()
 
+def frame_grid(collection_name, frame_name, include_headers = True):
+    header_int = 0
+    if include_headers == True:
+        header_int = 1
+    value = go_frame_grid(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')),
+            header_int)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    if value == None or value.strip() == '':
+        return []
+    return json.loads(value)
+
+def frame_objects(collection_name, frame_name):
+    value = go_frame_grid(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    if value == None or value.strip() == '':
+        return []
+    return json.loads(value)
 
 def sync_recieve_csv(collection_name, frame_name, csv_filename, overwrite = False):
     overwrite_i  = 0
