@@ -432,6 +432,11 @@ def grid(collection_name, keys, dot_paths):
 def frame(collection_name, frame_name, keys = [], dot_paths = [], labels = []):
     src_keys = json.dumps(keys)
     src_dot_paths = json.dumps(dot_paths)
+    if len(labels) == 0 and len(dot_paths) > 0:
+        for item in dotpaths:
+            if item.startswith("."):
+                item = item[1:]
+            labels.append(item)
     src_labels = json.dumps(labels)
     value = go_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')),

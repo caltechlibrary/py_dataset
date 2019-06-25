@@ -4,5 +4,12 @@ build
 dist
 py_dataset.egg-info
 py_dataset/__pycache__/
-# test collections
+py_dataset/lib/INSTALL.md
+py_dataset/lib/LICENSE
+py_dataset/lib/README.md
+*.swp
+*~
+*.bak
+# test collections and files
 *.ds
+test_*csv
