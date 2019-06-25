@@ -70,26 +70,62 @@ extern "C" {
 
 
 // error_clear will set the global error state to nil.
+//
 
 extern void error_clear();
 
+// error_message returns an error message previously recorded or
+// an empty string if no errors recorded
+//
+
 extern char* error_message();
+
+// use_strict_dotpath sets the library option value for
+// enforcing strict dotpaths. 1 is true, any other value is false.
+//
 
 extern int use_strict_dotpath(int p0);
 
+// is_verbose returns the library options' verbose value.
+//
+
 extern int is_verbose();
+
+// verbose_on set library verbose to true
+//
 
 extern void verbose_on();
 
+// verbose_off set library verbose to false
+//
+
 extern void verbose_off();
+
+// dataset_version returns the dataset version the libdataset presents.
+//
 
 extern char* dataset_version();
 
+// init_collection intializes a collection and records as much metadata
+// as it can from the execution environment (e.g. username,
+// datetime created)
+//
+
 extern int init_collection(char* p0);
+
+// has_key returns 1 if the key exists in a collection or 0 if not.
+//
 
 extern int has_key(char* p0, char* p1);
 
+// create_record takes JSON source and adds it to the collection with
+// the provided key.
+//
+
 extern int create_record(char* p0, char* p1, char* p2);
+
+// read_record takes a key and returns JSON source of the record
+//
 
 extern char* read_record(char* p0, char* p1, int p2);
 
@@ -101,17 +137,43 @@ extern char* read_record(char* p0, char* p1, int p2);
 
 extern char* read_record_list(char* p0, char* p1, int p2);
 
+// update_record takes a key and JSON source and replaces the record
+// in the collection.
+//
+
 extern int update_record(char* p0, char* p1, char* p2);
+
+// delete_record takes a key and removes a record from the collection
+//
 
 extern int delete_record(char* p0, char* p1);
 
+// join takes a collection name, a key, and merges JSON source with an
+// existing JSON record. If overwrite is 1 it overwrites and replaces
+// common values, if not 1 it only adds missing attributes.
+//
+
 extern int join(char* p0, char* p1, char* p2, int p3);
+
+// keys returns JSON source of an array of keys from the collection
+//
 
 extern char* keys(char* p0, char* p1, char* p2);
 
+// key_filter returns JSON source of an array of keys passing
+// through the filter of objects in the collection.
+//
+
 extern char* key_filter(char* p0, char* p1, char* p2);
 
+// key_sort returns JSON source of an array of keys sorted by
+// the sort expression applied to the objects in the collection.
+//
+
 extern char* key_sort(char* p0, char* p1, char* p2);
+
+// count returns the number of objects (records) in a collection.
+//
 
 extern int count(char* p0);
 
@@ -149,39 +211,115 @@ extern int import_gsheet(char* p0, char* p1, char* p2, int p3, char* p4, int p5,
 
 extern int export_gsheet(char* p0, char* p1, char* p2, char* p3, char* p4);
 
+// status checks to see if a collection exists or not.
+//
+
 extern int status(char* p0);
+
+// list returns JSON array of objects in a collections based on a
+// JSON array of keys.
+//
 
 extern char* list(char* p0, char* p1);
 
+// path returns the path on disc to an JSON object document
+// in the collection.
+//
+
 extern char* path(char* p0, char* p1);
+
+// check runs the analyzer over a collection and looks for
+// problem records.
+//
 
 extern int check(char* p0);
 
+// repair runs the analyzer over a collection and repairs JSON
+// objects and attachment discovered having a problem. Also is
+// useful for upgrading a collection between dataset releases.
+//
+
 extern int repair(char* p0);
+
+// attach will attach a file to a JSON object in a collection. It takes
+// a semver string (e.g. v0.0.1) and associates that with where it stores
+// the file.  If semver is v0.0.0 it is considered unversioned, if v0.0.1
+// or larger it is considered versioned.
+//
 
 extern int attach(char* p0, char* p1, char* p2, char* p3);
 
+// attachments returns a list of attachments and their size in
+// associated with a JSON obejct in the collection.
+//
+
 extern char* attachments(char* p0, char* p1);
+
+// detach exports the file associated with the semver from the JSON
+// object in the collection. The file remains "attached".
+//
 
 extern int detach(char* p0, char* p1, char* p2, char* p3);
 
+// prune removes an attachment by semver from a JSON object in the
+// collection. This is destructive, the file is removed from disc.
+//
+
 extern int prune(char* p0, char* p1, char* p2, char* p3);
+
+// clone takes a collection name, a JSON array of keys and creates
+// a new collection with a new name based on the origin's collections'
+// objects.
+//
 
 extern int clone(char* p0, char* p1, char* p2);
 
+// clone_sample is like clone both generates a sample or test and
+// training set of sampled of the cloned collection.
+//
+
 extern int clone_sample(char* p0, char* p1, char* p2, int p3);
+
+// grid generates a "Grid" structure from a collection.
+//
 
 extern char* grid(char* p0, char* p1, char* p2);
 
-extern char* frame(char* p0, char* p1, char* p2, char* p3);
+// frame creates a data frame in a collection. It needs a JSON array of
+// keys, dotpaths and labels and returns JSON source of the new frame.
+//
+
+extern char* frame(char* p0, char* p1, char* p2, char* p3, char* p4);
+
+// has_frame returns 1 if the frame name exists in the collection,
+// otherwise 0.
+//
 
 extern int has_frame(char* p0, char* p1);
 
+// frames returns a JSON array of frames names in the collection.
+//
+
 extern char* frames(char* p0);
+
+// reframe takes a JSON array of keys and updates the frame's
+// object list.
+//
 
 extern int reframe(char* p0, char* p1, char* p2);
 
+// frame_labels takes a JSON array of labels and re-labels the frame
+// and renames the object list's attribute names. NOTE: this means the
+// object list is regenerated with freash values copied from the
+// from the collection base on the dot paths defined in the frame.
+// The first label will always be _Key and if not provided it will
+// be inserted. The total number of labels and object paths must match.
+//
+
 extern int frame_labels(char* p0, char* p1, char* p2);
+
+// delete_frame removes a frame from a collection.
+//
 
 extern int delete_frame(char* p0, char* p1);
 
@@ -204,6 +342,13 @@ extern int sync_send_gsheet(char* p0, char* p1, char* p2, char* p3, char* p4, in
 //
 
 extern int sync_recieve_gsheet(char* p0, char* p1, char* p2, char* p3, char* p4, int p5);
+
+// frame_objects returns a copy of a frame's object list as an
+// array of objects in JSON source. The array is ordered, the attributes
+// in the objects are not ordered.
+//
+
+extern char* frame_objects(char* p0, char* p1);
 
 #ifdef __cplusplus
 }
