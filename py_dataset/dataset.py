@@ -503,7 +503,7 @@ def frame_grid(collection_name, frame_name, include_headers = True):
     return json.loads(value)
 
 def frame_objects(collection_name, frame_name):
-    value = go_frame_grid(ctypes.c_char_p(collection_name.encode('utf-8')),
+    value = go_frame_objects(ctypes.c_char_p(collection_name.encode('utf-8')),
             ctypes.c_char_p(frame_name.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
