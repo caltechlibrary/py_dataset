@@ -433,7 +433,7 @@ def frame(collection_name, frame_name, keys = [], dot_paths = [], labels = []):
     src_keys = json.dumps(keys)
     src_dot_paths = json.dumps(dot_paths)
     if len(labels) == 0 and len(dot_paths) > 0:
-        for item in dotpaths:
+        for item in dot_paths:
             if item.startswith("."):
                 item = item[1:]
             labels.append(item)
