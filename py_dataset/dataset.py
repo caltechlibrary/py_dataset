@@ -445,8 +445,8 @@ def frame(collection_name, frame_name, keys = [], dot_paths = [], labels = []):
         ctypes.c_char_p(src_labels.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
-    if value == None or value.strip() == '':
-        return [], error_message()
+    if value == None or value.strip() == '' or len(value) == 0:
+        return {}, error_message()
     return json.loads(value), ''
 
 def has_frame(collection_name, frame_name):
@@ -460,8 +460,8 @@ def frames(collection_name):
     value = go_frames(ctypes.c_char_p(collection_name.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
-    if value == None or value.strip() == '':
-        return []
+    if value == None or value.strip() == '' or len(value) == 0: 
+        return [] 
     return json.loads(value)
 
 def reframe(collection_name, frame_name, keys = []):
