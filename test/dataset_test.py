@@ -542,8 +542,8 @@ def test_frame_objects(t, c_name):
                 }], "two":   20, "three": 334.1, "four":  [] }
     ]
     keys = []
-    dot_paths = [".nameIdentifiers",".nameIdentifiers.nameIdentifier",".two", ".three", ".four"]
-    labels = ["nameIdentifiers", "nameIdentifier", "two", "three", "four"]
+    dot_paths = ["._Key",".nameIdentifiers",".nameIdentifiers.nameIdentifier",".two", ".three", ".four"]
+    labels = ["id","nameIdentifiers", "nameIdentifier", "two", "three", "four"]
     for row in data:
         key = row['id']
         keys.append(key)
@@ -564,12 +564,13 @@ def test_frame_objects(t, c_name):
     count_nameId = 0
     count_nameIdObj = 0
     for obj in object_result:
-        if '_Key' not in obj:
-            t.error('Did not get key in object')
-        if 'nameIdentifers' in obj:
+        if 'id' not in obj:
+            t.error('Did not get id in object')
+        if 'nameIdentifiers' in obj:
             count_nameId += 1
-            if 'nameIdentifier' not in obj['nameIdentifiers']:
-                t.error('Missing part of object')
+            for idv in obj['nameIdentifiers']:
+                if 'nameIdentifier' not in idv:
+                    t.error('Missing part of object')
         if 'nameIdentifer' in obj:
             count_nameIdObj += 1
             if "0000-000X-XXXX-XXXX" not in obj['nameIdentifier']:
