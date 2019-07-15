@@ -308,16 +308,6 @@ extern char* frames(char* p0);
 
 extern int reframe(char* p0, char* p1, char* p2);
 
-// frame_labels takes a JSON array of labels and re-labels the frame
-// and renames the object list's attribute names. NOTE: this means the
-// object list is regenerated with freash values copied from the
-// from the collection base on the dot paths defined in the frame.
-// The first label will always be _Key and if not provided it will
-// be inserted. The total number of labels and object paths must match.
-//
-
-extern int frame_labels(char* p0, char* p1, char* p2);
-
 // delete_frame removes a frame from a collection.
 //
 

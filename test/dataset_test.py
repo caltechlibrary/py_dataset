@@ -519,6 +519,75 @@ def test_frame(t, c_name):
     if err != '':
         t.error(err)
 
+def test_frame_objects(t, c_name):
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    err = dataset.init(c_name, "pairtree")
+    if err != '':
+        t.error(err)
+        return
+    data = [
+        { "id":    "A", "nameIdentifiers": [
+                {
+                    "nameIdentifier": "0000-000X-XXXX-XXXX",
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "http://orcid.org/"
+                },
+                {
+                    "nameIdentifier": "H-XXXX-XXXX",
+                    "nameIdentifierScheme": "ResearcherID",
+                    "schemeURI": "http://www.researcherid.com/rid/"
+                }], "two":   22, "three": 3.0, "four":  ["one", "two", "three"] },
+        { "id":    "B", "two":   2000, "three": 3000.1 },
+        { "id": "C" },
+        { "id":    "D", "nameIdentifiers": [
+                {
+                    "nameIdentifier": "0000-000X-XXXX-XXXX",
+                    "nameIdentifierScheme": "ORCID",
+                    "schemeURI": "http://orcid.org/"
+                }], "two":   20, "three": 334.1, "four":  [] }
+    ]
+    keys = []
+    dot_paths = [".nameIdentifiers",".nameIdentifiers.nameIdentifier",".two", ".three", ".four"]
+    labels = ["nameIdentifiers", "nameIdentifier", "two", "three", "four"]
+    for row in data:
+        key = row['id']
+        keys.append(key)
+        err = dataset.create(c_name, key, row)
+    f_name = 'f1'
+    (g, err) = dataset.frame(c_name, f_name, keys, dot_paths, labels)
+    if err != '':
+        t.error(err)
+    err = dataset.reframe(c_name, f_name)
+    if err != '':
+        t.error(err)
+    l = dataset.frames(c_name)
+    if len(l) != 1 or l[0] != 'f1':
+        t.error(f"expected one frame name, f1, got {l}")
+    object_result = dataset.frame_bojects(c_name, f_name)
+    if len(object_result) != 4:
+        t.error('Did not get correct number of objects back')
+    count_nameId = 0
+    count_nameIdObj = 0
+    for obj in object_result:
+        if '_Key' not in obj:
+            t.error('Did not get key in object')
+        if 'nameIdentifers' in obj:
+            count_nameId += 1
+            if 'nameIdentifier' not in obj['nameIdentifiers']:
+                t.error('Missing part of object')
+        if 'nameIdentifer' in obj:
+            count_nameIdObj += 1
+            if "0000-000X-XXXX-XXXX" not in obj['nameIdentifier']:
+                t.error('Missing object in complex dot path')
+    if count_nameId != 2:
+        t.error("Incorrect number of nameIdentifiers elements")
+    if count_nameIdObj != 2:
+        t.error("Incorrect number of nameIdentifier elements")
+    err = dataset.delete_frame(c_name, f_name)
+    if err != '':
+        t.error(err)
+
 #
 # test_sync_csv (issue 80) - add tests for sync_send_csv, sync_recieve_csv
 #
@@ -851,7 +920,7 @@ Python 'gsheet' test sequence.
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
     test_runner.add(test_grid, ["test_grid.ds"])
     test_runner.add(test_frame, ["test_frame.ds"])
-
+    test_runner.add(test_frame_objects, ["test_frame.ds"])
     test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
     if run_gsheet_tests == True:
         test_runner.add(test_basic_gsheet, ["test_gsheet.ds"])
