@@ -542,7 +542,7 @@ def test_frame_objects(t, c_name):
                 }], "two":   20, "three": 334.1, "four":  [] }
     ]
     keys = []
-    dot_paths = ["._Key",".nameIdentifiers",".nameIdentifiers.nameIdentifier",".two", ".three", ".four"]
+    dot_paths = ["._Key",".nameIdentifiers",".nameIdentifiers[:].nameIdentifier",".two", ".three", ".four"]
     labels = ["id","nameIdentifiers", "nameIdentifier", "two", "three", "four"]
     for row in data:
         key = row['id']
@@ -560,7 +560,7 @@ def test_frame_objects(t, c_name):
         t.error(f"expected one frame name, f1, got {l}")
     object_result = dataset.frame_objects(c_name, f_name)
     if len(object_result) != 4:
-        t.error('Did not get correct number of objects back')
+        t.error('Did not get correct number of objects back, expected 4 got {len(object_result)}')
     count_nameId = 0
     count_nameIdObj = 0
     for obj in object_result:
@@ -571,14 +571,14 @@ def test_frame_objects(t, c_name):
             for idv in obj['nameIdentifiers']:
                 if 'nameIdentifier' not in idv:
                     t.error('Missing part of object')
-        if 'nameIdentifer' in obj:
+        if 'nameIdentifier' in obj:
             count_nameIdObj += 1
             if "0000-000X-XXXX-XXXX" not in obj['nameIdentifier']:
                 t.error('Missing object in complex dot path')
     if count_nameId != 2:
-        t.error("Incorrect number of nameIdentifiers elements")
+        t.error(f"Incorrect number of nameIdentifiers elements, expected 2, got {count_nameId}")
     if count_nameIdObj != 2:
-        t.error("Incorrect number of nameIdentifier elements")
+        t.error(f"Incorrect number of nameIdentifier elements, expected 2, got {count_nameIdObj}")
     err = dataset.delete_frame(c_name, f_name)
     if err != '':
         t.error(err)
