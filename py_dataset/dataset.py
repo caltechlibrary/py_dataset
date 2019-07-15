@@ -20,7 +20,7 @@
 import json
 import ctypes
 
-from py_dataset.libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_frame_labels , go_delete_frame , go_frame_grid , go_frame_objects 
+from py_dataset.libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_delete_frame , go_frame_grid , go_frame_objects 
 
 #
 # These are our Python idiomatic functions
@@ -469,15 +469,6 @@ def reframe(collection_name, frame_name, keys = []):
     ok = go_reframe(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')),
         ctypes.c_char_p(src_keys.encode('utf-8')))
-    if ok == 1:
-        return ''
-    return error_message()
-
-def frame_labels(collection_name, frame_name, labels):
-    src_labels = json.dumps(labels)
-    ok = go_frame_labels(ctypes.c_char_p(collection_name.encode('utf-8')),
-        ctypes.c_char_p(frame_name.encode('utf-8')),
-        ctypes.c_char_p(src_labels.encode('utf-8')))
     if ok == 1:
         return ''
     return error_message()

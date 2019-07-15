@@ -509,12 +509,6 @@ def test_frame(t, c_name):
     l = dataset.frames(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
-    labels = ['Column A', 'Column B', 'Column C', 'Column D', 'Column E']
-    err = dataset.frame_labels(c_name, f_name, labels)
-    if err != '':
-        t.error(err)
-    if err != '':
-        t.error(err)
     err = dataset.delete_frame(c_name, f_name)
     if err != '':
         t.error(err)
@@ -564,7 +558,7 @@ def test_frame_objects(t, c_name):
     l = dataset.frames(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
-    object_result = dataset.frame_bojects(c_name, f_name)
+    object_result = dataset.frame_objects(c_name, f_name)
     if len(object_result) != 4:
         t.error('Did not get correct number of objects back')
     count_nameId = 0

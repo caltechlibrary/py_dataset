@@ -300,13 +300,6 @@ go_reframe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: value (JSON object source)
 go_reframe.restype = ctypes.c_int
 
-go_frame_labels = lib.frame_labels
-# Args: collection_name (string), frame_name (string), label_values (JSON array of string source)
-go_frame_labels.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
-# Returns: true (1), false (0)
-go_frame_labels.restype = ctypes.c_int
-
-
 go_delete_frame = lib.delete_frame
 # Args: collection_name (string), frame_name (string)
 go_delete_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
