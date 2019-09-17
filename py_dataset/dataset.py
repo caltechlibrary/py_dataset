@@ -20,7 +20,7 @@
 import json
 import ctypes
 
-from py_dataset.libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_delete_frame , go_frame_grid , go_frame_objects 
+from py_dataset.libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_delete_frame , go_frame_grid , go_frame_objects, go_make_objects, go_update_objects
 
 #
 # These are our Python idiomatic functions
@@ -557,6 +557,24 @@ def sync_send_gsheet(collection_name, frame_name, gsheet_id, gsheet_name, cell_r
             ctypes.c_char_p(gsheet_name.encode('utf-8')), 
             ctypes.c_char_p(cell_range.encode('utf-8')), 
             ctypes.c_int(overwrite_i))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def make_objects(collection_name, keys, default_object):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    keys_as_json = ctypes.c_char_p(json.dumps(keys).encode('utf8'))
+    object_as_json = ctypes.c_char_p(json.dumps(default_object).encode('utf8'))
+    ok = go_make_objects(c_name, keys_as_json, object_as_json)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def update_objects(collection_name, keys, objects):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    keys_as_json = ctypes.c_char_p(json.dumps(keys).encode('utf8'))
+    objects_as_json = ctypes.c_char_p(json.dumps(objects).encode('utf8'))
+    ok = go_update_objects(c_name, keys_as_json, objects_as_json)
     if ok == 1:
         return ''
     return error_message()

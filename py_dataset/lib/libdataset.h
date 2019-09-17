@@ -138,7 +138,7 @@ extern char* read_record(char* p0, char* p1, int p2);
 extern char* read_record_list(char* p0, char* p1, int p2);
 
 // update_record takes a key and JSON source and replaces the record
-// in the collection.
+// in the collection. FIXME: update_record should be named update_object
 //
 
 extern int update_record(char* p0, char* p1, char* p2);
@@ -347,6 +347,28 @@ extern char* frame_grid(char* p0, char* p1, int p2);
 //
 
 extern char* frame_objects(char* p0, char* p1);
+
+//
+// make_objects - is a function to creates empty a objects in batch.
+// It requires a JSON list of keys to create. For each key present
+// an attempt is made to create a new empty object based on the JSON
+// provided (e.g. `{}`, `{"is_empty": true}`). The reason to do this
+// is that it means the collection.json file is updated once for the
+// whole call and that the keys are now reserved to be updated separately.
+// Returns 1 on success, 0 if errors encountered.
+//
+
+extern int make_objects(char* p0, char* p1, char* p2);
+
+//
+// update_objects - is a function to update objects in batch.
+// It requires a JSON array of keys and a JSON array of
+// matching objects. The list of keys and objects are processed
+// together with calls to update individual records. Returns 1 on
+// success, 0 on error.
+//
+
+extern int update_objects(char* p0, char* p1, char* p2);
 
 #ifdef __cplusplus
 }

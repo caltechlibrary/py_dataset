@@ -318,3 +318,15 @@ go_frame_objects.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 # Returns: frame names (JSON Array Source)
 go_frame_objects.restype = ctypes.c_char_p
 
+go_make_objects = lib.make_objects
+# Args: collection_name (string), keys_as_json (string), object_as_json (string)
+go_make_objects.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 is has errors
+go_make_objects.restype = ctypes.c_int
+
+go_update_objects = lib.update_objects
+# Args: collection_name (string), keys_as_json (string), objects_as_json (string)
+go_update_objects.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 is has errors
+go_update_objects.restype = ctypes.c_int
+
