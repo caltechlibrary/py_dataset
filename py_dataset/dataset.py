@@ -20,12 +20,15 @@
 import json
 import ctypes
 
-from py_dataset.libdataset import go_basename , go_error_message , go_use_strict_dotpath , go_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_record , go_read_record , go_read_record_list , go_update_record , go_delete_record , go_has_key , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame , go_has_frame , go_frames , go_reframe , go_delete_frame , go_frame_grid , go_frame_objects, go_make_objects, go_update_objects
+from py_dataset.libdataset import go_basename , go_error_clear, go_error_message , go_use_strict_dotpath , go_dataset_version , go_is_verbose , go_verbose_on , go_verbose_off , go_init , go_create_object , go_read_object , go_read_object_list , go_update_object , go_delete_object , go_key_exists , go_keys , go_key_filter , go_key_sort , go_count , go_import_csv , go_export_csv , go_import_gsheet , go_export_gsheet , go_sync_recieve_csv , go_sync_send_csv , go_sync_recieve_gsheet , go_sync_send_gsheet , go_status , go_list , go_path , go_check , go_repair , go_attach , go_attachments , go_detach , go_prune , go_join , go_clone , go_clone_sample , go_grid , go_frame_create, go_frame_keys, go_frame_objects, go_frame_exists , go_frames , go_frame_reframe , go_frame_delete , go_frame_grid , go_update_objects, go_set_who, go_get_who, go_set_what, go_get_what, go_set_where, go_get_where, go_set_when, go_get_when, go_set_version, go_get_version, go_set_contact, go_get_contact
 
 #
 # These are our Python idiomatic functions
 # calling the C type wrapped functions in libdataset.py
 #
+def error_clear():
+    go_error_clear()
+
 def error_message():
     value = go_error_message()
     if not isinstance(value, bytes):
@@ -56,10 +59,11 @@ def verbose_off():
     return (ok == 1)
 
 # Returns version of dataset shared library
-def version():
-    value = go_version()
+def dataset_version():
+    value = go_dataset_version()
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
+    return value.decode()
 
 #
 # Now write our Python idiomatic function
@@ -94,13 +98,6 @@ def verbose_off():
     ok = go_verbose_off()
     return (ok == 1)
 
-# Returns version of dataset shared library
-def version():
-    value = go_version()
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    return value.decode() 
-
 # Initializes a Dataset Collection
 def init(collection_name, layout = "pairtree"):
     '''initialize a dataset collection with the given name'''
@@ -116,8 +113,8 @@ def init(collection_name, layout = "pairtree"):
     return error_message()
 
 # Has key, checks if a key is in the dataset collection
-def has_key(collection_name, key):
-    ok = go_has_key(ctypes.c_char_p(collection_name.encode('utf8')), 
+def key_exists(collection_name, key):
+    ok = go_key_exists(ctypes.c_char_p(collection_name.encode('utf8')), 
             ctypes.c_char_p(key.encode('utf8')))
     return (ok == 1)
 
@@ -126,7 +123,7 @@ def create(collection_name, key, value):
     '''create a new JSON record in the collection based on collection name, record key and JSON string, returns True/False'''
     if isinstance(key, str) == False:
         key = f"{key}"
-    ok = go_create_record(ctypes.c_char_p(collection_name.encode('utf8')), 
+    ok = go_create_object(ctypes.c_char_p(collection_name.encode('utf8')), 
             ctypes.c_char_p(key.encode('utf8')), 
             ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
@@ -141,7 +138,7 @@ def read(collection_name, key, clean_object = False):
         clean_object_int = ctypes.c_int(1)
     if not isinstance(key, str) == True:
         key = f"{key}"
-    value = go_read_record(ctypes.c_char_p(collection_name.encode('utf8')), 
+    value = go_read_object(ctypes.c_char_p(collection_name.encode('utf8')), 
             ctypes.c_char_p(key.encode('utf8')), clean_object_int)
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
@@ -167,7 +164,7 @@ def read_list(collection_name, keys, clean_object = False):
         l.append(key)
     # Generate our JSON version of they key list
     keys_as_json = json.dumps(l)
-    value = go_read_record_list(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(keys_as_json.encode('utf-8')), clean_object_int)
+    value = go_read_object_list(ctypes.c_char_p(collection_name.encode('utf-8')), ctypes.c_char_p(keys_as_json.encode('utf-8')), clean_object_int)
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     rval = value.decode()
@@ -184,7 +181,7 @@ def update(collection_name, key, value):
     '''update a JSON record from a collection with the given name, record key, JSON string returning True/False'''
     if not isinstance(key, str) == True:
         key = f"{key}"
-    ok = go_update_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
+    ok = go_update_object(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')), ctypes.c_char_p(json.dumps(value).encode('utf8')))
     if ok == 1:
         return ''
     return error_message()
@@ -194,7 +191,7 @@ def delete(collection_name, key):
     '''delete a JSON record (and any attachments) from a collection with the collectin name and record key, returning True/False'''
     if not isinstance(key, str) == True:
         key = f"{key}"
-    ok = go_delete_record(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
+    ok = go_delete_object(ctypes.c_char_p(collection_name.encode('utf8')), ctypes.c_char_p(key.encode('utf8')))
     if ok == 1:
         return ''
     return error_message()
@@ -429,7 +426,7 @@ def grid(collection_name, keys, dot_paths):
         return [], error_message()
     return json.loads(value), ''
 
-def frame(collection_name, frame_name, keys = [], dot_paths = [], labels = []):
+def frame_create(collection_name, frame_name, keys, dot_paths, labels):
     src_keys = json.dumps(keys)
     src_dot_paths = json.dumps(dot_paths)
     if len(labels) == 0 and len(dot_paths) > 0:
@@ -438,23 +435,38 @@ def frame(collection_name, frame_name, keys = [], dot_paths = [], labels = []):
                 item = item[1:]
             labels.append(item)
     src_labels = json.dumps(labels)
-    value = go_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
+    ok = go_frame_create(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')),
         ctypes.c_char_p(src_keys.encode('utf-8')),
         ctypes.c_char_p(src_dot_paths.encode('utf-8')),
         ctypes.c_char_p(src_labels.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+def frame_exists(collection_name, frame_name):
+    ok = go_frame_exists(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')))
+    if ok == 1:
+        return True
+    return False
+
+def frame_keys(collection_name, frame_name):
+    value = go_frame_keys(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return json.loads(value)
+
+def frame_objects(collection_name, frame_name):
+    value = go_frame_objects(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     if value == None or value.strip() == '' or len(value) == 0:
         return {}, error_message()
     return json.loads(value), ''
-
-def has_frame(collection_name, frame_name):
-    ok = go_has_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
-            ctypes.c_char_p(frame_name.encode('utf-8')))
-    if ok == 1:
-        return True
-    return False
 
 def frames(collection_name):
     value = go_frames(ctypes.c_char_p(collection_name.encode('utf-8')))
@@ -464,17 +476,33 @@ def frames(collection_name):
         return [] 
     return json.loads(value)
 
-def reframe(collection_name, frame_name, keys = []):
+def frame_reframe(collection_name, frame_name, keys = []):
     src_keys = json.dumps(keys)
-    ok = go_reframe(ctypes.c_char_p(collection_name.encode('utf-8')),
+    ok = go_frame_reframe(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')),
         ctypes.c_char_p(src_keys.encode('utf-8')))
     if ok == 1:
         return ''
     return error_message()
 
-def delete_frame(collection_name, frame_name):
-    ok = go_delete_frame(ctypes.c_char_p(collection_name.encode('utf-8')),
+def frame_refresh(collection_name, frame_name, keys = []):
+    src_keys = json.dumps(keys)
+    ok = go_frame_refresh(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')),
+        ctypes.c_char_p(src_keys.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def frame_clear(collection_name, frame_name):
+    ok = go_frame_clear(ctypes.c_char_p(collection_name.encode('utf-8')),
+        ctypes.c_char_p(frame_name.encode('utf-8')))
+    if ok == 1:
+        return ''
+    return error_message()
+
+def frame_delete(collection_name, frame_name):
+    ok = go_frame_delete(ctypes.c_char_p(collection_name.encode('utf-8')),
         ctypes.c_char_p(frame_name.encode('utf-8')))
     if ok == 1:
         return ''
@@ -487,15 +515,6 @@ def frame_grid(collection_name, frame_name, include_headers = True):
     value = go_frame_grid(ctypes.c_char_p(collection_name.encode('utf-8')),
             ctypes.c_char_p(frame_name.encode('utf-8')),
             header_int)
-    if not isinstance(value, bytes):
-        value = value.encode('utf-8')
-    if value == None or value.strip() == '':
-        return []
-    return json.loads(value)
-
-def frame_objects(collection_name, frame_name):
-    value = go_frame_objects(ctypes.c_char_p(collection_name.encode('utf-8')),
-            ctypes.c_char_p(frame_name.encode('utf-8')))
     if not isinstance(value, bytes):
         value = value.encode('utf-8')
     if value == None or value.strip() == '':
@@ -578,4 +597,108 @@ def update_objects(collection_name, keys, objects):
     if ok == 1:
         return ''
     return error_message()
+
+def set_who(collection_name, names = []):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    names_as_json = ctypes.c_char_p(json.dumps(names).encode('utf8'))
+    ok = go_set_who(c_name, names_as_json)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def set_what(collection_name, src = ""):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    c_src = ctypes.c_char_p(src.encode('utf8'))
+    ok = go_set_what(c_name, c_src)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def set_when(collection_name, src = ""):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    c_src = ctypes.c_char_p(src.encode('utf8'))
+    ok = go_set_when(c_name, c_src)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def set_where(collection_name, src = ""):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    c_src = ctypes.c_char_p(src.encode('utf8'))
+    ok = go_set_where(c_name, c_src)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def set_version(collection_name, src = ""):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    c_src = ctypes.c_char_p(src.encode('utf8'))
+    ok = go_set_version(c_name, c_src)
+    if ok == 1:
+        return ''
+    return error_message()
+
+def set_contact(collection_name, src = ""):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    c_src = ctypes.c_char_p(src.encode('utf8'))
+    ok = go_set_contact(c_name, c_src)
+    if ok == 1:
+        return ''
+    return error_message()
+
+
+def get_who(collection_name):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    value = go_get_who(c_name)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    rval = value.decode()
+    if type(rval) is str:
+        return json.loads(rval)
+    return []
+
+def get_what(collection_name):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    value = go_get_what(c_name)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode()
+
+def get_where(collection_name):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    value = go_get_where(c_name)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode()
+
+def get_when(collection_name):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    value = go_get_when(c_name)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode()
+
+def get_version(collection_name):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    value = go_get_version(c_name)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode()
+
+def get_contact(collection_name):
+    c_name = ctypes.c_char_p(collection_name.encode('utf-8'))
+    value = go_get_contact(c_name)
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    return value.decode()
+
+
+
+
+
+
+
+
+
+
 
