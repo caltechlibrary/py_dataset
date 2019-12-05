@@ -234,6 +234,16 @@ def test_attachments(t, collection_name):
         t.error("Failed, expected two attachments for", collection_name, key, "got", l)
         return
 
+    #Check that attachments arn't impacted by update
+    err = dataset.update(collection_name, key, {"testing":"update"})
+    if err != '':
+        t.error("Failed, to update record", collection_name, key, err)
+        return
+    l = dataset.attachments(collection_name, key)
+    if len(l) != 2:
+        t.error("Failed, expected two attachments after update for", collection_name, key, "got", l)
+        return
+
     if os.path.exists(filenames[0]):
         os.remove(filenames[0])
     if os.path.exists(filenames[1]):
@@ -282,6 +292,8 @@ def test_attachments(t, collection_name):
     l = dataset.attachments(collection_name, key)
     if len(l) != 0:
         t.error("Failed, expected zero files after prune for", collection_name, key, "got", l)
+
+    
 
 
 def test_s3(t):

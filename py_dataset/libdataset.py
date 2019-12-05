@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # 
-# libdataet.py is a C type wrapper for our libdataset.go is a C shared 
-# library. It is low level and intended to be used internally by 
-# dataset.py of py_dataset. Wrapper requires libdataset v0.0.64 or better.
+# libdataet.py is a C type wrapper for our libdataset.go is a C shared.
+# It is used to test our dataset functions exported from the C-Shared
+# library libdataset.so, libdataset.dynlib or libdataset.dll.
 # 
 # @author R. S. Doiel, <rsdoiel@library.caltech.edu>
 #
@@ -38,6 +38,9 @@ if sys.platform.startswith('linux'):
 dir_path = os.path.dirname(os.path.realpath(__file__))
 lib = ctypes.cdll.LoadLibrary(os.path.join(dir_path, go_basename+ext))
 
+# error_clear clears the error values
+go_error_clear = lib.error_clear
+
 # Setup our Go functions to be nicely wrapped
 go_error_message = lib.error_message
 go_error_message.restype = ctypes.c_char_p
@@ -47,8 +50,8 @@ go_use_strict_dotpath = lib.use_strict_dotpath
 go_use_strict_dotpath.argtypes = [ctypes.c_int]
 go_use_strict_dotpath.restype = ctypes.c_int
 
-go_version = lib.dataset_version
-go_version.restype = ctypes.c_char_p
+go_dataset_version = lib.dataset_version
+go_dataset_version.restype = ctypes.c_char_p
 
 go_is_verbose = lib.is_verbose
 go_is_verbose.restype = ctypes.c_int
@@ -65,44 +68,44 @@ go_init.argtypes = [ctypes.c_char_p, ctypes.c_int]
 # Returns: true (1), false (0)
 go_init.restype = ctypes.c_int
 
-go_create_record = lib.create_record
+go_create_object = lib.create_object
 # Args: collection_name (string), key (string), value (JSON source)
-go_create_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_create_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
-go_create_record.restype = ctypes.c_int
+go_create_object.restype = ctypes.c_int
 
-go_read_record = lib.read_record
+go_read_object = lib.read_object
 # Args: collection_name (string), key (string), clean_object (int)
-go_read_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_read_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 # Returns: value (JSON source)
-go_read_record.restype = ctypes.c_char_p
+go_read_object.restype = ctypes.c_char_p
 
 # THIS IS A HACK, ctypes doesn't **easily** support undemensioned arrays
 # of strings. So we will assume the array of keys has already been
 # transformed into JSON before calling go_read_list.
-go_read_record_list = lib.read_record_list
+go_read_object_list = lib.read_object_list
 # Args: collection_name (string), keys (list of strings AS JSON!!!), clean_object (int)
-go_read_record_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
+go_read_object_list.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 # Returns: value (JSON source)
-go_read_record_list.restype = ctypes.c_char_p
+go_read_object_list.restype = ctypes.c_char_p
 
-go_update_record = lib.update_record
+go_update_object = lib.update_object
 # Args: collection_name (string), key (string), value (JSON sourc)
-go_update_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_update_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
-go_update_record.restype = ctypes.c_int
+go_update_object.restype = ctypes.c_int
 
-go_delete_record = lib.delete_record
+go_delete_object = lib.delete_object
 # Args: collection_name (string), key (string)
-go_delete_record.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_delete_object.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
-go_delete_record.restype = ctypes.c_int
+go_delete_object.restype = ctypes.c_int
 
-go_has_key = lib.has_key
+go_key_exists = lib.key_exists
 # Args: collection_name (string), key (string)
-go_has_key.argtypes = [ctypes.c_char_p,ctypes.c_char_p]
+go_key_exists.argtypes = [ctypes.c_char_p,ctypes.c_char_p]
 # Returns: true (1), false (0)
-go_has_key.restype = ctypes.c_int
+go_key_exists.restype = ctypes.c_int
 
 go_keys = lib.keys
 # Args: collection_name (string), filter_expr (string), sort_expr (string)
@@ -276,17 +279,30 @@ go_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: value (JSON 2D array source)
 go_grid.restype = ctypes.c_char_p
 
-go_frame = lib.frame
+go_frame_create = lib.frame_create
 # Args: collection_name (string), frame_name (string), keys (JSON source), dotpaths (JSON source), labels (JSON source)
-go_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_frame_create.argtypes = [ctypes.c_char_p, ctypes.c_char_p,  ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: value (JSON object source)
-go_frame.restype = ctypes.c_char_p
+go_frame_create.restype = ctypes.c_int
 
-go_has_frame = lib.has_frame
+go_frame_exists = lib.frame_exists
 # Args: collection_name (string), fame_name (string)
-go_has_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_frame_exists.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
-go_has_frame.restype = ctypes.c_int
+go_frame_exists.restype = ctypes.c_int
+
+go_frame_keys = lib.frame_keys
+# Args: collection_name (string), fame_name (string)
+go_frame_keys.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Returns: value (JSON object source)
+go_frame_keys.restype = ctypes.c_char_p
+
+go_frame_objects = lib.frame_objects
+# Args: collection_name (string), fame_name (string)
+go_frame_objects.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Returns: value (JSON object source)
+go_frame_objects.restype = ctypes.c_char_p
+
 
 go_frames = lib.frames
 # Args: collection_name)
@@ -294,29 +310,35 @@ go_frames.argtypes = [ctypes.c_char_p]
 # Returns: frame names (JSON Array Source)
 go_frames.restype = ctypes.c_char_p
 
-go_reframe = lib.reframe
+go_frame_refresh = lib.frame_refresh
 # Args: collection_name (string), frame_name (string), keys??? (JSON source)
-go_reframe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+go_frame_refresh.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 # Returns: value (JSON object source)
-go_reframe.restype = ctypes.c_int
+go_frame_refresh.restype = ctypes.c_int
 
-go_delete_frame = lib.delete_frame
+go_frame_reframe = lib.frame_reframe
+# Args: collection_name (string), frame_name (string), keys??? (JSON source)
+go_frame_reframe.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+# Returns: value (JSON object source)
+go_frame_reframe.restype = ctypes.c_int
+
+go_frame_delete = lib.frame_delete
 # Args: collection_name (string), frame_name (string)
-go_delete_frame.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+go_frame_delete.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 # Returns: true (1), false (0)
-go_delete_frame.restype = ctypes.c_int
+go_frame_delete.restype = ctypes.c_int
+
+go_frame_clear = lib.frame_clear
+# Args: collection_name (string), frame_name (string)
+go_frame_clear.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+# Returns: true (1), false (0)
+go_frame_clear.restype = ctypes.c_int
 
 go_frame_grid = lib.frame_grid
 # Args: collection_name (string), frame_name (string), include header (int)
 go_frame_grid.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int]
 # Returns: frame names (JSON Array Source)
 go_frame_grid.restype = ctypes.c_char_p
-
-go_frame_objects = lib.frame_objects
-# Args: collection_name (string), frame_name (string)
-go_frame_objects.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-# Returns: frame names (JSON Array Source)
-go_frame_objects.restype = ctypes.c_char_p
 
 go_make_objects = lib.make_objects
 # Args: collection_name (string), keys_as_json (string), object_as_json (string)
@@ -329,4 +351,76 @@ go_update_objects = lib.update_objects
 go_update_objects.argtypes = [ ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p ]
 # Returns: int 0 is no error, 1 is has errors
 go_update_objects.restype = ctypes.c_int
+
+go_set_who = lib.set_who
+# Args: collection_name (string), names_as_json (string)
+go_set_who.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 has error(s)
+go_set_who.restype = ctypes.c_int
+
+go_set_what = lib.set_what
+# Args: collection_name (string), what value (string)
+go_set_what.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 has error(s)
+go_set_what.restype = ctypes.c_int
+
+go_set_when = lib.set_when
+# Args: collection_name (string), when value (string)
+go_set_when.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 has error(s)
+go_set_when.restype = ctypes.c_int
+
+go_set_where = lib.set_where
+# Args: collection_name (string), where value (string)
+go_set_where.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 has error(s)
+go_set_where.restype = ctypes.c_int
+
+go_set_version = lib.set_version
+# Args: collection_name (string), version value (string)
+go_set_version.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 has error(s)
+go_set_version.restype = ctypes.c_int
+
+go_set_contact = lib.set_contact
+# Args: collection_name (string), contact value (string)
+go_set_contact.argtypes = [ ctypes.c_char_p, ctypes.c_char_p ]
+# Returns: int 0 is no error, 1 has error(s)
+go_set_contact.restype = ctypes.c_int
+
+go_get_who = lib.get_who
+# Args: collection_name (string)
+go_get_who.argtypes = [ ctypes.c_char_p ]
+# Returns: frame names (JSON Array Source)
+go_get_who.restype = ctypes.c_char_p
+
+go_get_what = lib.get_what
+# Args: collection_name (string)
+go_get_what.argtypes = [ ctypes.c_char_p ]
+# Returns: frame names (JSON Array Source)
+go_get_what.restype = ctypes.c_char_p
+
+go_get_where = lib.get_where
+# Args: collection_name (string)
+go_get_where.argtypes = [ ctypes.c_char_p ]
+# Returns: frame names (JSON Array Source)
+go_get_where.restype = ctypes.c_char_p
+
+go_get_when = lib.get_when
+# Args: collection_name (string)
+go_get_when.argtypes = [ ctypes.c_char_p ]
+# Returns: frame names (JSON Array Source)
+go_get_when.restype = ctypes.c_char_p
+
+go_get_version = lib.get_version
+# Args: collection_name (string)
+go_get_version.argtypes = [ ctypes.c_char_p ]
+# Returns: frame names (JSON Array Source)
+go_get_version.restype = ctypes.c_char_p
+
+go_get_contact = lib.get_contact
+# Args: collection_name (string)
+go_get_contact.argtypes = [ ctypes.c_char_p ]
+# Returns: frame names (JSON Array Source)
+go_get_contact.restype = ctypes.c_char_p
 

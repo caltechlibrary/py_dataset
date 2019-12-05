@@ -113,21 +113,16 @@ extern char* dataset_version();
 
 extern int init_collection(char* p0);
 
-// has_key returns 1 if the key exists in a collection or 0 if not.
-//
-
-extern int has_key(char* p0, char* p1);
-
-// create_record takes JSON source and adds it to the collection with
+// create_object takes JSON source and adds it to the collection with
 // the provided key.
 //
 
-extern int create_record(char* p0, char* p1, char* p2);
+extern int create_object(char* p0, char* p1, char* p2);
 
-// read_record takes a key and returns JSON source of the record
+// read_object takes a key and returns JSON source of the record
 //
 
-extern char* read_record(char* p0, char* p1, int p2);
+extern char* read_object(char* p0, char* p1, int p2);
 
 // THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
 // undemensioned arrays of strings. So we will assume the array of
@@ -135,18 +130,18 @@ extern char* read_record(char* p0, char* p1, int p2);
 // read_list.
 //
 
-extern char* read_record_list(char* p0, char* p1, int p2);
+extern char* read_object_list(char* p0, char* p1, int p2);
 
-// update_record takes a key and JSON source and replaces the record
-// in the collection. FIXME: update_record should be named update_object
+// update_object takes a key and JSON source and replaces the record
+// in the collection.
 //
 
-extern int update_record(char* p0, char* p1, char* p2);
+extern int update_object(char* p0, char* p1, char* p2);
 
-// delete_record takes a key and removes a record from the collection
+// delete_object takes a key and removes a record from the collection
 //
 
-extern int delete_record(char* p0, char* p1);
+extern int delete_object(char* p0, char* p1);
 
 // join takes a collection name, a key, and merges JSON source with an
 // existing JSON record. If overwrite is 1 it overwrites and replaces
@@ -155,10 +150,15 @@ extern int delete_record(char* p0, char* p1);
 
 extern int join(char* p0, char* p1, char* p2, int p3);
 
+// key_exists returns 1 if the key exists in a collection or 0 if not.
+//
+
+extern int key_exists(char* p0, char* p1);
+
 // keys returns JSON source of an array of keys from the collection
 //
 
-extern char* keys(char* p0, char* p1, char* p2);
+extern char* keys(char* p0);
 
 // key_filter returns JSON source of an array of keys passing
 // through the filter of objects in the collection.
@@ -173,7 +173,7 @@ extern char* key_filter(char* p0, char* p1, char* p2);
 extern char* key_sort(char* p0, char* p1, char* p2);
 
 // count returns the number of objects (records) in a collection.
-//
+// if an error is encounter a -1 is returned.
 
 extern int count(char* p0);
 
@@ -285,33 +285,51 @@ extern int clone_sample(char* p0, char* p1, char* p2, int p3);
 
 extern char* grid(char* p0, char* p1, char* p2);
 
-// frame creates a data frame in a collection. It needs a JSON array of
-// keys, dotpaths and labels and returns JSON source of the new frame.
+// frame_exists returns 1 (true) if frame name exists in collection, 0 (false) otherwise
 //
 
-extern char* frame(char* p0, char* p1, char* p2, char* p3, char* p4);
+extern int frame_exists(char* p0, char* p1);
 
-// has_frame returns 1 if the frame name exists in the collection,
-// otherwise 0.
+// frame_keys takes a collection name and frame name and returns a list of keys from the frame or an empty list.
+// The list is expressed as a JSON source.
 //
 
-extern int has_frame(char* p0, char* p1);
+extern char* frame_keys(char* p0, char* p1);
+
+// frame_create defines a new frame an populates it.
+//
+
+extern int frame_create(char* p0, char* p1, char* p2, char* p3, char* p4);
+
+// frame_objects retrieves a JSON source list of objects from a frame.
+//
+
+extern char* frame_objects(char* p0, char* p1);
+
+// frame_refresh refresh the contents of a frame given a list of keys.
+//
+
+extern int frame_refresh(char* p0, char* p1, char* p2);
+
+// frame_reframe will change of object list in a frame based on the key list provided.
+//
+
+extern int frame_reframe(char* p0, char* p1, char* p2);
+
+// frame_clear will clear the object list and keys associated with a frame.
+//
+
+extern int frame_clear(char* p0, char* p1);
+
+// frame_delete will removes a frame from a collection
+//
+
+extern int frame_delete(char* p0, char* p1);
 
 // frames returns a JSON array of frames names in the collection.
 //
 
 extern char* frames(char* p0);
-
-// reframe takes a JSON array of keys and updates the frame's
-// object list.
-//
-
-extern int reframe(char* p0, char* p1, char* p2);
-
-// delete_frame removes a frame from a collection.
-//
-
-extern int delete_frame(char* p0, char* p1);
 
 // sync_send_csv - synchronize a frame sending data to a CSV file
 //
@@ -341,13 +359,6 @@ extern int sync_recieve_gsheet(char* p0, char* p1, char* p2, char* p3, char* p4,
 
 extern char* frame_grid(char* p0, char* p1, int p2);
 
-// frame_objects returns a copy of a frame's object list as an
-// array of objects in JSON source. The array is ordered, the attributes
-// in the objects are not ordered.
-//
-
-extern char* frame_objects(char* p0, char* p1);
-
 //
 // make_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
@@ -369,6 +380,66 @@ extern int make_objects(char* p0, char* p1, char* p2);
 //
 
 extern int update_objects(char* p0, char* p1, char* p2);
+
+// set_who will set the "who" value associated with the collection's metadata
+//
+
+extern int set_who(char* p0, char* p1);
+
+// get_who will get the "who" value associated with the collection's metadata
+//
+
+extern char* get_who(char* p0);
+
+// set_what will set the "what" value associated with the collection's metadata
+//
+
+extern int set_what(char* p0, char* p1);
+
+// get_what will get the "what" value associated with the collection's metadata
+//
+
+extern char* get_what(char* p0);
+
+// set_when will set the "when" value associated with the collection's metadata
+//
+
+extern int set_when(char* p0, char* p1);
+
+// get_when will get the "what" value associated with the collection's metadata
+//
+
+extern char* get_when(char* p0);
+
+// set_where will set the "where" value associated with the collection's metadata
+//
+
+extern int set_where(char* p0, char* p1);
+
+// get_where will get the "where" value associated with the collection's metadata
+//
+
+extern char* get_where(char* p0);
+
+// set_version will set the "version" value associated with the collection's metadata
+//
+
+extern int set_version(char* p0, char* p1);
+
+// get_version will get the "version" value associated with the collection's metadata
+//
+
+extern char* get_version(char* p0);
+
+// set_contact will set the "contact" value associated with the collection's metadata
+//
+
+extern int set_contact(char* p0, char* p1);
+
+// get_contact will get the "contact" value associated with the collection's metadata
+//
+
+extern char* get_contact(char* p0);
 
 #ifdef __cplusplus
 }
