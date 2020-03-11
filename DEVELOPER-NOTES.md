@@ -19,6 +19,7 @@ updates locally and test.
 + Update `py_dataset/dataset.py` as needed
 + Update version number in `codemeta.json`
 + Test and commit changes to the master branch in the git repo
+    + `python3 test\dataset_test.py`
 + Make a github release
 + Push changes up to pypy
 
