@@ -452,6 +452,13 @@ def frame_exists(collection_name, frame_name):
         return True
     return False
 
+def has_frame(collection_name, frame_name):
+    ok = go_frame_exists(ctypes.c_char_p(collection_name.encode('utf-8')),
+            ctypes.c_char_p(frame_name.encode('utf-8')))
+    if ok == 1:
+        return True
+    return False
+
 def frame_keys(collection_name, frame_name):
     value = go_frame_keys(ctypes.c_char_p(collection_name.encode('utf-8')),
             ctypes.c_char_p(frame_name.encode('utf-8')))
