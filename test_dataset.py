@@ -147,6 +147,69 @@ def test_keys(t, collection_name):
     
 
 #
+# test_issue12() https://github.com/caltechlibrary/py_dataset/issues/12
+# delete_frame() returns True but frame metadata still in memory.
+#
+def test_issue12(t, c_name):
+    src = '''[
+{"id": "1", "c1": 1, "c2": 2, "c3": 3 },
+{"id": "2", "c1": 2, "c2": 2, "c3": 3 },
+{"id": "3", "c1": 3, "c2": 3, "c3": 3 },
+{"id": "4", "c1": 1, "c2": 1, "c3": 1 },
+{"id": "5", "c1": 6, "c2": 6, "c3": 6 }
+]'''
+    #dataset.verbose_on() # DEBUG
+    #dataset.use_strict_dotpath(True) # DEBUG
+    if dataset.status(c_name) == False:
+        if not dataset.init(c_name):
+            err = dataset.error_message()
+            t.error(f'failed to create {c_name}')
+            return 
+    objects = json.loads(src)
+    for obj in objects:
+        key = obj['id']
+        if dataset.has_key(c_name, key):
+            dataset.update(c_name, key, obj)
+        else:            
+            dataset.create(c_name, key, obj)
+    f_names = dataset.frames(c_name)
+    for f_name in f_names:
+        ok = dataset.delete_frame(c_name, f_name)
+        if ok == False:
+            err = dataset.error_message()
+            t.error(f'Failed to delete {f_name} from {c_name} -> "{err}"')
+            return
+        if dataset.has_frame(c_name, f_name) == True:
+            t.error(f'Failed to delete frame {c_name} from {c_name}, frame still exists')
+            return
+    f_name = 'issue12'
+    dot_paths = [ ".c1", "c3" ]
+    labels = [ ".col1", ".col3" ]
+    keys = dataset.keys(c_name)
+    if not dataset.frame_create(c_name, f_name, keys, dot_paths, labels):
+        err = dataset.error_message()
+        t.error(f'failed to create {f_name} from {c_name}, {err}')
+    if not dataset.has_frame(c_name, f_name):
+        err = dataset.error_message()
+        t.error(f'expected frame {f_name} to exists, {err}')
+        return
+    f_keys = dataset.frame_keys(c_name, f_name)
+    if len(f_keys) == 0:
+        err = dataset.error_message()
+        t.error(f'expected keys in {f_name}, got zero, {err}')
+        return
+    f_objects = dataset.frame_objects(c_name, f_name)
+    if len(f_objects) == 0:
+        err = dataset.error_message()
+        t.error(f'expected objects in {f_name}, got zero, {err}')
+        return
+    if not dataset.delete_frame(c_name, f_name):
+        err = dataset.error_message()
+        t.error(f'expected to delete {f_name} in {c_name}, {err}')
+
+
+
+#
 # test_issue32() make sure issue 32 stays fixed.
 #
 def test_issue32(t, collection_name):
@@ -704,6 +767,7 @@ if __name__ == "__main__":
     test_runner.add(test_frame_objects, ["test_frame.ds"])
     test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
+    test_runner.add(test_issue12, ['test_issue12.ds'])
 
     test_runner.run()
 

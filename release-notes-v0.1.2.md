@@ -1,5 +1,5 @@
 
-# Release note for v0.1.3 release
+# Release note for v0.1.2 release
 
 ## Dropped integrations
 
