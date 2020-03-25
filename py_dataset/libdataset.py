@@ -101,6 +101,26 @@ libdataset.init_collection.argtypes = [ c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.init_collection.restype = c_bool
 
+# is_collection_open() checks to see if the collection
+# is already open and in the list of open collections.
+#
+# Args: collection_name (string)
+libdataset.is_collection_open.argtypes = [ c_char_p ]
+# Returns: Ture (1) or False (0)
+libdataset.is_collection_open.restype = c_bool
+
+# collections() returns a list of opened collections.
+#
+# Returns: string (names of collections)
+libdataset.collections.restype = c_char_p
+
+# open_collcetion() explicitly opens a collection.
+#
+# Args: collection_name (string)
+libdataset.open_collection.argtypes = [ c_char_p ]
+# Returns: True (1) or False (0)
+libdataset.open_collection.restype = c_bool
+
 # close_collection() closes a previously opened collection.
 # Most libdataset commands auto-magically open the collection.
 #
@@ -108,6 +128,11 @@ libdataset.init_collection.restype = c_bool
 libdataset.close_collection.argtypes = [ c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.close_collection.restype = c_bool
+
+# close_all_collections closes all opened collections.
+#
+# Returns: True (1) or False (0)
+libdataset.close_all_collections.restype = c_bool
 
 # create_object() creates a JSON object in a collection.
 #
@@ -310,6 +335,13 @@ libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_bool ]
 # Returns: True (1) or False (0)
 libdataset.clone_sample.restype = c_bool
 
+# frame() returns the full metadata and contents of a frame.
+#
+# Args: collection_name (string), frame_name (string)
+libdataset.frame.argtypes = [ c_char_p, c_char_p ]
+# Returns: value (JSON object source)
+libdataset.frame.restype = c_char_p
+
 # frame_create() generates a new data frame given a collection name,
 # frame name, keys, dot paths and labels.
 #
@@ -371,7 +403,7 @@ libdataset.frame_delete.argtypes = [ c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.frame_delete.restype = c_bool
 
-# frame_clean() removes all objects from a frame.
+# frame_clear() removes all objects from a frame.
 #
 # Args: collection_name (string), frame_name (string)
 libdataset.frame_clear.argtypes = [ c_char_p, c_char_p]
@@ -386,13 +418,13 @@ libdataset.frame_grid.argtypes = [ c_char_p, c_char_p, c_bool ]
 # Returns: string (JSON Array Source)
 libdataset.frame_grid.restype = c_char_p
 
-# make_objects() generates a batch of objects in a collection,
+# create_objects() generates a batch of objects in a collection,
 # used for testing libdataset.
 #
 # Args: collection_name (string), keys_as_json (string), objects_as_json (string)
-libdataset.make_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
+libdataset.create_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
-libdataset.make_objects.restype = c_bool
+libdataset.create_objects.restype = c_bool
 
 # update_objects()  updates a set of objects in a collections, used in
 # testing a counter part to make_objects.

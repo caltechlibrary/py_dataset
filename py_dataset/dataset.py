@@ -74,10 +74,28 @@ def init(collection_name):
     '''initialize a dataset collection with the given name'''
     return libdataset.init_collection(c_char_p(collection_name.encode('utf8')))
 
+def is_open(c_name):
+    '''check to see if a collection is already opened.'''
+    return libdataset.is_collection_open(c_char_p(collection_name.encode('utf8')))
+
+def collections():
+    '''returns a list of open collections'''
+    value = libdataset.collections()
+    if not isinstance(value, bytes):
+        value = value.encode('utf8')
+    return json.loads(value.decode())
+
+def open(collection_name):
+    '''explicitly open a collection'''
+    return libdataet.open_collection(c_char_p(collection_name.encode('utf8')))
+
 def close(collection_name):
     '''close an open collection'''
     return libdataset.close_collection(c_char_p(collection_name.encode('utf8')))
 
+def close_all():
+    '''close all open collections'''
+    return libdataset.close_all_collectins()
 # Has key, checks if a key is in the dataset collection
 def has_key(collection_name, key):
     return libdataset.key_exists(c_char_p(collection_name.encode('utf8')), 
@@ -380,11 +398,21 @@ def sync_send_csv(collection_name, frame_name, csv_filename, overwrite = False):
             c_char_p(csv_filename.encode('utf-8')), 
             overwrite)
 
+# DEPRECIATED name, replace by create_objects() to be more consistant
+# with other function names.
 def make_objects(collection_name, keys, default_object):
     c_name = c_char_p(collection_name.encode('utf-8'))
     keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
     object_as_json = c_char_p(json.dumps(default_object).encode('utf8'))
     return libdataset.make_objects(c_name, keys_as_json, object_as_json)
+
+# NOTE: replaces make_objects() to be more consistent in naming functions.
+def create_objects(collection_name, keys, default_object):
+    c_name = c_char_p(collection_name.encode('utf-8'))
+    keys_as_json = c_char_p(json.dumps(keys).encode('utf8'))
+    object_as_json = c_char_p(json.dumps(default_object).encode('utf8'))
+    return libdataset.make_objects(c_name, keys_as_json, object_as_json)
+
 
 def update_objects(collection_name, keys, objects):
     c_name = c_char_p(collection_name.encode('utf-8'))

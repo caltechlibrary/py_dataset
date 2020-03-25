@@ -269,7 +269,7 @@ extern int count_objects(char* p0);
 extern char* object_path(char* p0, char* p1);
 
 //
-// make_objects - is a function to creates empty a objects in batch.
+// create_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
 // an attempt is made to create a new empty object based on the JSON
 // provided (e.g. `{}`, `{"is_empty": true}`). The reason to do this
@@ -278,7 +278,7 @@ extern char* object_path(char* p0, char* p1);
 // Returns 1 on success, 0 if errors encountered.
 //
 
-extern int make_objects(char* p0, char* p1, char* p2);
+extern int create_objects(char* p0, char* p1, char* p2);
 
 //
 // update_objects - is a function to update objects in batch.
@@ -373,11 +373,6 @@ extern int frame_delete(char* p0, char* p1);
 //
 
 extern char* frames(char* p0);
-
-// delete_frame removes a frame from a collection.
-//
-
-extern int delete_frame(char* p0, char* p1);
 
 // frame_grid takes a frames object list and returns a grid
 // (2D JSON array) representation of the object list.
