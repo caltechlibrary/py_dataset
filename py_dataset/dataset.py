@@ -74,7 +74,7 @@ def init(collection_name):
     '''initialize a dataset collection with the given name'''
     return libdataset.init_collection(c_char_p(collection_name.encode('utf8')))
 
-def is_open(c_name):
+def is_open(collection_name):
     '''check to see if a collection is already opened.'''
     return libdataset.is_collection_open(c_char_p(collection_name.encode('utf8')))
 
