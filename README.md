@@ -25,14 +25,13 @@ automatically.
 
 ## Features
 
-[dataset](https://caltechlibrary.github.io/dataset/docs/dataset) supports 
+[dataset](docs/dataset) supports 
 
-- Basic storage actions ([create](https://caltechlibrary.github.io/dataset/docs/create.html), [read](https://caltechlibrary.github.io/dataset/docs/read.html), [update](https://caltechlibrary.github.io/dataset/docs/update.html) and [delete](https://caltechlibrary.github.io/dataset/docs/delete.html))
+- Basic storage actions ([create](docs/create.html), [read](docs/read.html), [update](docs/update.html) and [delete](docs/delete.html))
 - listing of collection [keys](docs/keys.html) (including filtering and sorting)
-- import/export  of [CSV](https://caltechlibrary.github.io/dataset/how-to/working-with-csv.html) files.
-- The ability to reshape data by performing simple object [joins](https://caltechlibrary.github.io/dataset/docs/join.html)
-- The ability to create data [frames](https://caltechlibrary.github.io/dataset/docs/frame.html) from collections based 
-  on keys lists and [dot paths](https://caltechlibrary.github.io/dataset/docs/dotpath.html) into the JSON objects stored
+- import/export  of [CSV](docs/csv.html) files.
+- The ability to reshape data by performing simple object [join](docs/join.html)
+- The ability to create data [frames](docs/frames.html) from collections based on keys lists and [dot paths](docs/dotpath.html) into the JSON objects stored
 
 ### Limitations of _dataset_
 
