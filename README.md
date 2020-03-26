@@ -67,7 +67,8 @@ Then run the following Python commands.
     # Let's create our a dataset collection. We use the method called 'init' it returns True or False
     dataset.init(c_name)
 
-    # Let's check our collection to see if it is OK
+    # Let's check to see if our collection to exists, True it exists
+    # False if it doesn't.
     dataset.status(c_name)
 
     # Let's count the records in our collection (should be zero)
@@ -93,8 +94,11 @@ Then run the following Python commands.
     print(keys)
 
     # We can read the record we stored using the 'read' method.
-    new_record = dataset.read(c_name, key)
-    print(new_record)
+    new_record, err = dataset.read(c_name, key)
+    if err != '':
+        print(err)
+    else:
+        print(new_record)
 
     # Let's modify new_record and update the record in our collection
     new_record["two"] = 2
@@ -103,7 +107,8 @@ Then run the following Python commands.
         print(dataset.error_message())
 
     # Let's print out the record we stored using read method
-    print(dataset.read(c_name, key)
+    # read returns a touple so we're printing the first one.
+    print(dataset.read(c_name, key)[0])
 
     # Finally we can remove (delete) a record from our collection
     ok = dataset.delete(c_name, key)
