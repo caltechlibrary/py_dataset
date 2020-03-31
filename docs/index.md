@@ -1,8 +1,6 @@
 
 [up](..)
 
-# py_dataset 
-
 ## Getting started
 
 [the basics](basics.html)
