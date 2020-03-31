@@ -1,4 +1,6 @@
 
+[up](./)
+
 ## Joining Objects
 
 You can augement JSON key/value pairs for a JSON document in your 

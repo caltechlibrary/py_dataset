@@ -1,4 +1,6 @@
 
+[up](./)
+
 # keys
 
 Keys are used to add, update and retrieve JSON objects in your

@@ -1,4 +1,6 @@
 
+[up](./)
+
 # read
 
 The `read()` method retrieves an existing object from a collection

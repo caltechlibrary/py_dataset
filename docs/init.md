@@ -1,4 +1,6 @@
 
+[up](./)
+
 # initailizing a dataset collection
 
 You can create a dataset collection from Python using the `init()`
