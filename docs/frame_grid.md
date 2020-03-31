@@ -1,4 +1,6 @@
 
+[up](./)
+
 # frame_grid
 
 Sometimes it is useful to have a table like view our our data frame

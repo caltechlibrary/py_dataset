@@ -1,4 +1,6 @@
 
+[up](./)
+
 # delete
 
 Remove an object from a dataset collection.

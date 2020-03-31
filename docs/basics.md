@@ -1,4 +1,6 @@
 
+[up](./)
+
 ## Basics
 
 `py_dataset` is the python version of [dataset](https://caltechlibrary.github.io/dataset). dataset is a way of storing and organazing JSON documents
