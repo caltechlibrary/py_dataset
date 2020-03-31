@@ -1,7 +1,7 @@
 
 [up](./)
 
-# dotpath 
+# dot path 
 
 ## Description
 
