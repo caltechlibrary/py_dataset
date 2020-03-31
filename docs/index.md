@@ -41,8 +41,11 @@
 
 ## Working with subsets of data
 
-[frame_create](frame_create.html)
-: Create an ordered sub set of an collections objects and object paths (i.e. [dot paths](dot_path.html)
+[frame_create](frame.html)
+: Create an ordered sub set of an collections objects and object paths (i.e. [dot paths](dot_path.html))
+
+[has_frame](frame.html)
+: Check to see if a frame exists in a collection
 
 [frame](frame.html)
 : Return a data frame's full metadata
