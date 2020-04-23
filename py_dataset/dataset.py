@@ -87,7 +87,7 @@ def collections():
 
 def open(collection_name):
     '''explicitly open a collection'''
-    return libdataet.open_collection(c_char_p(collection_name.encode('utf8')))
+    return libdataset.open_collection(c_char_p(collection_name.encode('utf8')))
 
 def close(collection_name):
     '''close an open collection'''
