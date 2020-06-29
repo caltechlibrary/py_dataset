@@ -384,7 +384,7 @@ libdataset.frames.restype = c_char_p
 # the current state of the collection. Any objects removed from
 # the collection will be removed from the frame.
 #
-# Args: collection_name (string), frame_name (string), keys (JSON source)
+# Args: collection_name (string), frame_name (string)
 libdataset.frame_refresh.argtypes = [ c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.frame_refresh.restype = c_bool

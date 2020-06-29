@@ -361,11 +361,9 @@ def frame_reframe(collection_name, frame_name, keys = []):
         c_char_p(frame_name.encode('utf-8')),
         c_char_p(src_keys.encode('utf-8')))
 
-def frame_refresh(collection_name, frame_name, keys = []):
-    src_keys = json.dumps(keys)
+def frame_refresh(collection_name, frame_name):
     return libdataset.frame_refresh(c_char_p(collection_name.encode('utf-8')),
-        c_char_p(frame_name.encode('utf-8')),
-        c_char_p(src_keys.encode('utf-8')))
+        c_char_p(frame_name.encode('utf-8')))
 
 def frame_clear(collection_name, frame_name):
     return libdataset.frame_clear(c_char_p(collection_name.encode('utf-8')),
