@@ -349,12 +349,16 @@ extern int frame_create(char* p0, char* p1, char* p2, char* p3, char* p4);
 
 extern char* frame_objects(char* p0, char* p1);
 
-// frame_refresh refresh the contents of a frame given a list of keys.
+// frame_refresh refresh the contents of the frame using the
+// existing keys associated with the frame and the current state
+// of the collection.  NOTE: If a key is missing
+// in the collection then the key and object is removed.
 //
 
 extern int frame_refresh(char* p0, char* p1);
 
-// frame_reframe will change of object list in a frame based on the key list provided.
+// frame_reframe will change the key and object list in a frame based on
+// the key list provided and the current state of the collection.
 //
 
 extern int frame_reframe(char* p0, char* p1, char* p2);
