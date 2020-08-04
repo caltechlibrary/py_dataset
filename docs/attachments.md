@@ -50,7 +50,7 @@ Using the **py_dataset** you issue the follow command --
     if not dataset.create(c_name, key, obj)
         print(f'failed to create {key}, {dataset.error_message()}')
         exit()
-    if not dataset.attach(c_name,  key, semver, '/Users/fred/Documents/notes-on-walrus.docx')
+    if not dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ], semver)
         print(f'failed to attach to {key}, {dataset.error_message()}')
         exit()
 ```
@@ -70,7 +70,7 @@ If we had added our attachment including a semver the directory structure
 will be slightly more complex.
 
 ```shell
-    if not dataset.attach(c_name, key, 'v0.0.1', '/Users/fred/Documents/notes-on-walrus.docx'):
+    if not dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ], 'v0.0.1'):
         print(dataset.error_message())
 ```
 
@@ -132,7 +132,7 @@ Let's look at our first example again in detail.
 
 ```shell
     dataset.create(c_name, key, obj)
-    dataset.attach(c_name, key, 'v0.0.0', '/Users/fred/Documents/notes-on-walrus.docx')
+    dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ], 'v0.0.0' )
 ```
 
 The JSON object created by the two command looks like
