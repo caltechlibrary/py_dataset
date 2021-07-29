@@ -116,37 +116,11 @@ def test_keys(t, collection_name):
             err = dataset.error_message()
             t.error("Failed, could not add", k, "to", collection_name, ', ', err)
     
-    # Test keys, filtering keys and sorting keys
+    # Test keys
     all_keys = dataset.keys(collection_name)
     if len(all_keys) != test_count:
         t.error("Expected", test_count,"all_keys back, got", keys)
     
-    #dataset.verbose_on()
-    filter_expr = '(eq .categories "non-fiction, memoir")'
-    filtered_keys = dataset.key_filter(collection_name, all_keys, filter_expr)
-    if len(filtered_keys) != 1:
-        t.error(f"key_filter({collection_name}, {keys}, {filter_expre}), Expected one key for", filter_expr, "got", filtered_keys)
-    
-    filter_expr = '(contains .categories "novel")'
-    filtered_keys = dataset.key_filter(collection_name, all_keys, filter_expr)
-    if len(filtered_keys) != 3:
-        t.error(f"key_filter({collection_name}, {keys}, {filter_expr}), Expected three keys for", filter_expr, "got", filtered_keys)
-    
-    sort_expr = '+.title'
-    filter_expr = '(contains .categories "novel")'
-    sorted_keys = dataset.key_sort(collection_name, 
-                    filtered_keys, sort_expr)
-    if len(sorted_keys) != 3:
-        t.error(f"key_sort({collection_name}, {filtered_keys}, {sort_expr}), Expected three keys for", filter_expr, "got", sorted_keys)
-    expected_keys = ["gutenberg:21839", "gutenberg:21489", "gutenberg:2488"]
-    for i, k in enumerate(expected_keys):
-        if i < len(sorted_keys) and sorted_keys[i] != k:
-            obj1, _ = dataset.read(collection_name, k)
-            obj2, _ = dataset.read(collection_name, sorted_keys[i])
-            t.error(f'key_sort({collection_name}, {filtered_keys}, {sort_expr}), ({q}) Expected {k} (title "{obj1["title"]}) got {keys[i]} (title "{obj2["title"]}")')
-    
-
-#
 # test_issue12() https://github.com/caltechlibrary/py_dataset/issues/12
 # delete_frame() returns True but frame metadata still in memory.
 #

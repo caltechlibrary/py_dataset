@@ -7,7 +7,7 @@
 from setuptools import setup, find_packages, Command
 from shutil import rmtree, copyfile
 
-import sys
+import sys, platform
 import os,io
 import json
 
@@ -77,17 +77,17 @@ except FileNotFoundError:
     long_description = description
 
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
-platform = ""
 if sys.platform.startswith('win'):
     shared_library_name = "py_dataset/lib/libdataset.dll"
-    platform = "Windows"
     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
 if sys.platform.startswith('linux'):
     shared_library_name = "py_dataset/lib/libdataset.so"
     OS_Classifier = "Operating System :: POSIX :: Linux"
 if sys.platform.startswith("darwin"):
-    shared_library_name = "py_dataset/lib/libdataset.dylib"
-    platform = "Mac OS X"
+    if platform.processor() == 'arm':
+        shared_library_name = "py_dataset/lib/libdataset-arm.dylib"
+    else:
+        shared_library_name = "py_dataset/lib/libdataset.dylib"
     OS_Classifier = "Operating System :: MacOS :: MacOS X"
         
 if os.path.exists(os.path.join(shared_library_name)) == False:
@@ -141,7 +141,7 @@ setup(name = name,
     download_url = download,
     license = license,
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests", "*_test.py"]),
-    package_data={name:['lib/libdataset.dll','lib/libdataset.so','lib/libdataset.h','lib/libdataset.dylib']},
+    package_data={name:['lib/libdataset.dll','lib/libdataset.so','lib/libdataset.h','lib/libdataset.dylib','lib/libdataset-arm.dylib']},
     keywords = keywords,
     classifiers = [
         "Development Status :: 4 - Beta",

@@ -19,7 +19,7 @@
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
-import sys
+import sys, platform
 import os
 import json
 from ctypes import CDLL, c_char_p, c_int, c_bool
@@ -30,7 +30,11 @@ ext = '.so'
 if sys.platform.startswith('win'):
     ext = '.dll'
 if sys.platform.startswith('darwin'):
-    ext = '.dylib'
+    #M1 mac uses a special dylib
+    if platform.processor() == 'arm':
+        ext = '-arm.dylib'
+    else:
+        ext = '.dylib'
 if sys.platform.startswith('linux'):
     ext = '.so'
 
@@ -185,22 +189,6 @@ libdataset.key_exists.restype = c_bool
 libdataset.keys.argtypes = [ c_char_p ]
 # Returns: string (JSON source)
 libdataset.keys.restype = c_char_p
-
-# key_filter() takes a list of keys and filters the objects to return
-# a new filtered list of keys.
-#
-# Args: collection_name (string), key_list (JSON array source), filter_expr (string)
-libdataset.key_filter.argtypes = [ c_char_p, c_char_p, c_char_p ]
-# Returns: string (JSON source)
-libdataset.key_filter.restype = c_char_p
-
-# key_sort() takes a list of keys and a sort expression return a sorted
-# list of keys.
-#
-# Args: collection_name (string), key_list (JSON array source), sort order (string)
-libdataset.key_sort.argtypes = [ c_char_p, c_char_p, c_char_p ]
-# Returns: string (JSON source)
-libdataset.key_sort.restype = c_char_p
 
 # count_objects() returns the number of objects in a collection.
 #

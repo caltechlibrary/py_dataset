@@ -71,103 +71,85 @@ extern "C" {
 
 // error_clear will set the global error state to nil.
 //
-
 extern void error_clear();
 
 // error_message returns an error message previously recorded or
 // an empty string if no errors recorded
 //
-
 extern char* error_message();
 
 // use_strict_dotpath sets the library option value for
 // enforcing strict dotpaths. 1 is true, any other value is false.
 //
-
-extern int use_strict_dotpath(int p0);
+extern int use_strict_dotpath(int v);
 
 // is_verbose returns the library options' verbose value.
 //
-
 extern int is_verbose();
 
 // verbose_on set library verbose to true
 //
-
 extern void verbose_on();
 
 // verbose_off set library verbose to false
 //
-
 extern void verbose_off();
 
 // dataset_version returns the version of libdataset.
 //
-
 extern char* dataset_version();
 
 // init_collection intializes a collection and records as much metadata
 // as it can from the execution environment (e.g. username,
 // datetime created)
 //
-
-extern int init_collection(char* p0);
+extern int init_collection(char* name);
 
 // is_collection_open returns true (i.e. one) if a collection has been opened by libdataset, false (i.e. zero) otherwise
 //
-
-extern int is_collection_open(char* p0);
+extern int is_collection_open(char* cName);
 
 // open_collection returns 0 on successfully opening a collection 1 otherwise. Sets error messages if needed.
 //
-
-extern int open_collection(char* p0);
+extern int open_collection(char* cName);
 
 // collections returns a JSON list of collection names that are open otherwise an empty list.
 //
-
 extern char* collections();
 
 // close_collection closes a collection previously opened.
 //
-
-extern int close_collection(char* p0);
+extern int close_collection(char* cName);
 
 // close_all_collections closes all collections previously opened
 //
-
 extern int close_all_collections();
 
 // collection_exits checks to see if a collection exists or not.
 //
-
-extern int collection_exists(char* p0);
+extern int collection_exists(char* cName);
 
 // check_collection runs the analyzer over a collection and looks for
 // problem records.
 //
-
-extern int check_collection(char* p0);
+extern int check_collection(char* cName);
 
 // repair_collection runs the analyzer over a collection and repairs JSON
 // objects and attachment discovered having a problem. Also is
 // useful for upgrading a collection between dataset releases.
 //
-
-extern int repair_collection(char* p0);
+extern int repair_collection(char* cName);
 
 // clone_collection takes a collection name, a JSON array of keys and creates
 // a new collection with a new name based on the origin's collections'
 // objects.
 //
-
-extern int clone_collection(char* p0, char* p1, char* p2);
+extern int clone_collection(char* cName, char* cKeys, char* dName);
 
 // clone_sample is like clone both generates a sample or test and
 // training set of sampled of the cloned collection.
 //
-
-extern int clone_sample(char* p0, char* p1, char* p2, int p3);
+extern int clone_sample(char* cName, char* cTrainingName, char* cTestName, int cSampleSize);
 
 // import_csv - import a CSV file into a collection
 // syntax: COLLECTION CSV_FILENAME ID_COL
@@ -177,96 +159,70 @@ extern int clone_sample(char* p0, char* p1, char* p2, int p3);
 //     cUseHeaderRow
 //     cOverwrite
 //
-
-extern int import_csv(char* p0, char* p1, int p2, int p3, int p4);
+extern int import_csv(char* cName, char* cCSVFName, int cIDCol, int cUseHeaderRow, int cOverwrite);
 
 // export_csv - export collection objects to a CSV file
 // syntax: COLLECTION FRAME CSV_FILENAME
 //
-
-extern int export_csv(char* p0, char* p1, char* p2);
+extern int export_csv(char* cName, char* cFrameName, char* cCSVFName);
 
 // sync_send_csv - synchronize a frame sending data to a CSV file
 // returns 1 (True) on success, 0 (False) otherwise.
 //
-
-extern int sync_send_csv(char* p0, char* p1, char* p2, int p3);
+extern int sync_send_csv(char* cName, char* cFName, char* cCSVFilename, int cSyncOverwrite);
 
 // sync_recieve_csv - synchronize a frame recieving data from a CSV file
 // returns 1 (True) on success, 0 (False) otherwise.
 //
-
-extern int sync_recieve_csv(char* p0, char* p1, char* p2, int p3);
+extern int sync_recieve_csv(char* cName, char* cFName, char* cCSVFilename, int cSyncOverwrite);
 
 // key_exists returns 1 if the key exists in a collection or 0 if not.
 //
-
-extern int key_exists(char* p0, char* p1);
+extern int key_exists(char* cName, char* cKey);
 
 // keys returns JSON source of an array of keys from the collection
 //
-
-extern char* keys(char* p0);
-
-// key_filter returns JSON source of an array of keys passing
-// through the filter of objects in the collection.
-//
-
-extern char* key_filter(char* p0, char* p1, char* p2);
-
-// key_sort returns JSON source of an array of keys sorted by
-// the sort expression applied to the objects in the collection.
-//
-
-extern char* key_sort(char* p0, char* p1, char* p2);
+extern char* keys(char* cName);
 
 // create_object takes JSON source and adds it to the collection with
 // the provided key.
 //
-
-extern int create_object(char* p0, char* p1, char* p2);
+extern int create_object(char* cName, char* cKey, char* cSrc);
 
 // read_object takes a key and returns JSON source of the record
 //
-
-extern char* read_object(char* p0, char* p1, int p2);
+extern char* read_object(char* cName, char* cKey, int cCleanObject);
 
 // THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
 // undemensioned arrays of strings. So we will assume the array of
 // keys has already been transformed into JSON before calling
 // read_list.
 //
-
-extern char* read_object_list(char* p0, char* p1, int p2);
+extern char* read_object_list(char* cName, char* cKeysAsJSON, int cCleanObject);
 
 // update_object takes a key and JSON source and replaces the record
 // in the collection.
 //
-
-extern int update_object(char* p0, char* p1, char* p2);
+extern int update_object(char* cName, char* cKey, char* cSrc);
 
 // delete_object takes a key and removes a record from the collection
 //
-
-extern int delete_object(char* p0, char* p1);
+extern int delete_object(char* cName, char* cKey);
 
 // join_objects takes a collection name, a key, and merges JSON source with an
 // existing JSON record. If overwrite is 1 it overwrites and replaces
 // common values, if not 1 it only adds missing attributes.
 //
-
-extern int join_objects(char* p0, char* p1, char* p2, int p3);
+extern int join_objects(char* cName, char* cKey, char* cObjSrc, int cOverwrite);
 
 // count_objects returns the number of objects (records) in a collection.
 // if an error is encounter a -1 is returned.
-
-extern int count_objects(char* p0);
+extern int count_objects(char* cName);
 
 // object_path returns the path on disc to an JSON object document
 // in the collection.
 //
-
-extern char* object_path(char* p0, char* p1);
+extern char* object_path(char* cName, char* cKey);
 
 //
 // create_objects - is a function to creates empty a objects in batch.
@@ -277,8 +233,7 @@ extern char* object_path(char* p0, char* p1);
 // whole call and that the keys are now reserved to be updated separately.
 // Returns 1 on success, 0 if errors encountered.
 //
-
-extern int create_objects(char* p0, char* p1, char* p2);
+extern int create_objects(char* cName, char* keysAsJSON, char* objectAsJSON);
 
 //
 // update_objects - is a function to update objects in batch.
@@ -287,164 +242,135 @@ extern int create_objects(char* p0, char* p1, char* p2);
 // together with calls to update individual records. Returns 1 on
 // success, 0 on error.
 //
-
-extern int update_objects(char* p0, char* p1, char* p2);
+extern int update_objects(char* cName, char* keysAsJSON, char* objectsAsJSON);
 
 // list_objects returns JSON array of objects in a collections based on a
 // JSON array of keys.
 //
-
-extern char* list_objects(char* p0, char* p1);
+extern char* list_objects(char* cName, char* cKeys);
 
 // attach will attach a file to a JSON object in a collection. It takes
 // a semver string (e.g. v0.0.1) and associates that with where it stores
 // the file.  If semver is v0.0.0 it is considered unversioned, if v0.0.1
 // or larger it is considered versioned.
 //
-
-extern int attach(char* p0, char* p1, char* p2, char* p3);
+extern int attach(char* cName, char* cKey, char* cSemver, char* cFNames);
 
 // attachments returns a list of attachments and their size in
 // associated with a JSON obejct in the collection.
 //
-
-extern char* attachments(char* p0, char* p1);
+extern char* attachments(char* cName, char* cKey);
 
 // detach exports the file associated with the semver from the JSON
 // object in the collection. The file remains "attached".
 //
-
-extern int detach(char* p0, char* p1, char* p2, char* p3);
+extern int detach(char* cName, char* cKey, char* cSemver, char* cFNames);
 
 // prune removes an attachment by semver from a JSON object in the
 // collection. This is destructive, the file is removed from disc.
 //
-
-extern int prune(char* p0, char* p1, char* p2, char* p3);
+extern int prune(char* cName, char* cKey, char* cSemver, char* cFNames);
 
 // frame retrieves a frame including its metadata. NOTE:
 // if you just want the object list, use frame_objects().
 //
-
-extern char* frame(char* p0, char* p1);
+extern char* frame(char* cName, char* cFName);
 
 // frame_exists returns 1 (true) if frame name exists in collection, 0 (false) otherwise
 //
-
-extern int frame_exists(char* p0, char* p1);
+extern int frame_exists(char* cName, char* cFName);
 
 // frame_keys takes a collection name and frame name and returns a list of keys from the frame or an empty list.
 // The list is expressed as a JSON source.
 //
-
-extern char* frame_keys(char* p0, char* p1);
+extern char* frame_keys(char* cName, char* cFName);
 
 // frame_create defines a new frame an populates it.
 //
-
-extern int frame_create(char* p0, char* p1, char* p2, char* p3, char* p4);
+extern int frame_create(char* cName, char* cFName, char* cKeysSrc, char* cDotPathsSrc, char* cLabelsSrc);
 
 // frame_objects retrieves a JSON source list of objects from a frame.
 //
-
-extern char* frame_objects(char* p0, char* p1);
+extern char* frame_objects(char* cName, char* cFName);
 
 // frame_refresh refresh the contents of the frame using the
 // existing keys associated with the frame and the current state
 // of the collection.  NOTE: If a key is missing
 // in the collection then the key and object is removed.
 //
-
-extern int frame_refresh(char* p0, char* p1);
+extern int frame_refresh(char* cName, char* cFName);
 
 // frame_reframe will change the key and object list in a frame based on
 // the key list provided and the current state of the collection.
 //
-
-extern int frame_reframe(char* p0, char* p1, char* p2);
+extern int frame_reframe(char* cName, char* cFName, char* cKeysSrc);
 
 // frame_clear will clear the object list and keys associated with a frame.
 //
-
-extern int frame_clear(char* p0, char* p1);
+extern int frame_clear(char* cName, char* cFName);
 
 // frame_delete will removes a frame from a collection
 //
-
-extern int frame_delete(char* p0, char* p1);
+extern int frame_delete(char* cName, char* cFName);
 
 // frames returns a JSON array of frames names in the collection.
 //
-
-extern char* frames(char* p0);
+extern char* frames(char* cName);
 
 // frame_grid takes a frames object list and returns a grid
 // (2D JSON array) representation of the object list.
 // If the "header row" value is 1 a header row of labels is
 // included, otherwise it is only the values of returned in the grid.
 //
-
-extern char* frame_grid(char* p0, char* p1, int p2);
+extern char* frame_grid(char* cName, char* cFName, int cIncludeHeaderRow);
 
 // set_who will set the "who" value associated with the collection's metadata
 //
-
-extern int set_who(char* p0, char* p1);
+extern int set_who(char* cName, char* cNamesSrc);
 
 // get_who will get the "who" value associated with the collection's metadata
 //
-
-extern char* get_who(char* p0);
+extern char* get_who(char* cName);
 
 // set_what will set the "what" value associated with the collection's metadata
 //
-
-extern int set_what(char* p0, char* p1);
+extern int set_what(char* cName, char* cSrc);
 
 // get_what will get the "what" value associated with the collection's metadata
 //
-
-extern char* get_what(char* p0);
+extern char* get_what(char* cName);
 
 // set_when will set the "when" value associated with the collection's metadata
 //
-
-extern int set_when(char* p0, char* p1);
+extern int set_when(char* cName, char* cSrc);
 
 // get_when will get the "what" value associated with the collection's metadata
 //
-
-extern char* get_when(char* p0);
+extern char* get_when(char* cName);
 
 // set_where will set the "where" value associated with the collection's metadata
 //
-
-extern int set_where(char* p0, char* p1);
+extern int set_where(char* cName, char* cSrc);
 
 // get_where will get the "where" value associated with the collection's metadata
 //
-
-extern char* get_where(char* p0);
+extern char* get_where(char* cName);
 
 // set_version will set the "version" value associated with the collection's metadata
 //
-
-extern int set_version(char* p0, char* p1);
+extern int set_version(char* cName, char* cSrc);
 
 // get_version will get the "version" value associated with the collection's metadata
 //
-
-extern char* get_version(char* p0);
+extern char* get_version(char* cName);
 
 // set_contact will set the "contact" value associated with the collection's metadata
 //
-
-extern int set_contact(char* p0, char* p1);
+extern int set_contact(char* cName, char* cSrc);
 
 // get_contact will get the "contact" value associated with the collection's metadata
 //
-
-extern char* get_contact(char* p0);
+extern char* get_contact(char* cName);
 
 #ifdef __cplusplus
 }
