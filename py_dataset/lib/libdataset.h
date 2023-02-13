@@ -5,7 +5,7 @@
 
 #line 1 "cgo-builtin-export-prolog"
 
-#include <stddef.h> /* for ptrdiff_t below */
+#include <stddef.h>
 
 #ifndef GO_CGO_EXPORT_PROLOGUE_H
 #define GO_CGO_EXPORT_PROLOGUE_H
@@ -40,11 +40,17 @@ typedef long long GoInt64;
 typedef unsigned long long GoUint64;
 typedef GoInt64 GoInt;
 typedef GoUint64 GoUint;
-typedef __SIZE_TYPE__ GoUintptr;
+typedef size_t GoUintptr;
 typedef float GoFloat32;
 typedef double GoFloat64;
+#ifdef _MSC_VER
+#include <complex.h>
+typedef _Fcomplex GoComplex64;
+typedef _Dcomplex GoComplex128;
+#else
 typedef float _Complex GoComplex64;
 typedef double _Complex GoComplex128;
+#endif
 
 /*
   static assertion to make sure the file is being used on architecture
@@ -101,9 +107,10 @@ extern char* dataset_version();
 
 // init_collection intializes a collection and records as much metadata
 // as it can from the execution environment (e.g. username,
-// datetime created)
+// datetime created). NOTE: New parameter required, storageType. This
+// can be either "pairtree" or "sqlstore".
 //
-extern int init_collection(char* name);
+extern int init_collection(char* name, char* cStorageType);
 
 // is_collection_open returns true (i.e. one) if a collection has been opened by libdataset, false (i.e. zero) otherwise
 //
@@ -142,22 +149,25 @@ extern int repair_collection(char* cName);
 
 // clone_collection takes a collection name, a JSON array of keys and creates
 // a new collection with a new name based on the origin's collections'
-// objects.
+// objects. NOTE: If you are using pairtree dsn can be an empty string
+// otherwise it needs to be a dsn to connect to the SQL store.
 //
-extern int clone_collection(char* cName, char* cKeys, char* dName);
+extern int clone_collection(char* cName, char* cDsn, char* cKeys, char* dName);
 
 // clone_sample is like clone both generates a sample or test and
-// training set of sampled of the cloned collection.
+// training set of sampled of the cloned collection. NOTE: The
+// training name and testing name are followed by their own dsn values.
+// If the dsn is an empty string then a pairtree store is assumed.
 //
-extern int clone_sample(char* cName, char* cTrainingName, char* cTestName, int cSampleSize);
+extern int clone_sample(char* cName, char* cTrainingName, char* cTrainingDsn, char* cTestName, char* cTestDsn, int cSampleSize);
 
 // import_csv - import a CSV file into a collection
 // syntax: COLLECTION CSV_FILENAME ID_COL
 //
 // options that should support sensible defaults:
 //
-//     cUseHeaderRow
-//     cOverwrite
+//	cUseHeaderRow
+//	cOverwrite
 //
 extern int import_csv(char* cName, char* cCSVFName, int cIDCol, int cUseHeaderRow, int cOverwrite);
 
@@ -176,9 +186,9 @@ extern int sync_send_csv(char* cName, char* cFName, char* cCSVFilename, int cSyn
 //
 extern int sync_recieve_csv(char* cName, char* cFName, char* cCSVFilename, int cSyncOverwrite);
 
-// key_exists returns 1 if the key exists in a collection or 0 if not.
+// has_key returns 1 if the key exists in collection or 0 if not.
 //
-extern int key_exists(char* cName, char* cKey);
+extern int has_key(char* cName, char* cKey);
 
 // keys returns JSON source of an array of keys from the collection
 //
@@ -217,6 +227,7 @@ extern int join_objects(char* cName, char* cKey, char* cObjSrc, int cOverwrite);
 
 // count_objects returns the number of objects (records) in a collection.
 // if an error is encounter a -1 is returned.
+//
 extern int count_objects(char* cName);
 
 // object_path returns the path on disc to an JSON object document
@@ -224,7 +235,6 @@ extern int count_objects(char* cName);
 //
 extern char* object_path(char* cName, char* cKey);
 
-//
 // create_objects - is a function to creates empty a objects in batch.
 // It requires a JSON list of keys to create. For each key present
 // an attempt is made to create a new empty object based on the JSON
@@ -235,7 +245,6 @@ extern char* object_path(char* cName, char* cKey);
 //
 extern int create_objects(char* cName, char* keysAsJSON, char* objectAsJSON);
 
-//
 // update_objects - is a function to update objects in batch.
 // It requires a JSON array of keys and a JSON array of
 // matching objects. The list of keys and objects are processed
@@ -276,9 +285,9 @@ extern int prune(char* cName, char* cKey, char* cSemver, char* cFNames);
 //
 extern char* frame(char* cName, char* cFName);
 
-// frame_exists returns 1 (true) if frame name exists in collection, 0 (false) otherwise
+// has_frame returns 1 (true) if frame name exists in collection, 0 (false) otherwise
 //
-extern int frame_exists(char* cName, char* cFName);
+extern int has_frame(char* cName, char* cFName);
 
 // frame_keys takes a collection name and frame name and returns a list of keys from the frame or an empty list.
 // The list is expressed as a JSON source.
@@ -313,9 +322,9 @@ extern int frame_clear(char* cName, char* cFName);
 //
 extern int frame_delete(char* cName, char* cFName);
 
-// frames returns a JSON array of frames names in the collection.
+// frame_names returns a JSON array of frames names in the collection.
 //
-extern char* frames(char* cName);
+extern char* frame_names(char* cName);
 
 // frame_grid takes a frames object list and returns a grid
 // (2D JSON array) representation of the object list.
@@ -324,53 +333,9 @@ extern char* frames(char* cName);
 //
 extern char* frame_grid(char* cName, char* cFName, int cIncludeHeaderRow);
 
-// set_who will set the "who" value associated with the collection's metadata
-//
-extern int set_who(char* cName, char* cNamesSrc);
-
-// get_who will get the "who" value associated with the collection's metadata
-//
-extern char* get_who(char* cName);
-
-// set_what will set the "what" value associated with the collection's metadata
-//
-extern int set_what(char* cName, char* cSrc);
-
-// get_what will get the "what" value associated with the collection's metadata
-//
-extern char* get_what(char* cName);
-
-// set_when will set the "when" value associated with the collection's metadata
-//
-extern int set_when(char* cName, char* cSrc);
-
-// get_when will get the "what" value associated with the collection's metadata
-//
-extern char* get_when(char* cName);
-
-// set_where will set the "where" value associated with the collection's metadata
-//
-extern int set_where(char* cName, char* cSrc);
-
-// get_where will get the "where" value associated with the collection's metadata
-//
-extern char* get_where(char* cName);
-
-// set_version will set the "version" value associated with the collection's metadata
-//
-extern int set_version(char* cName, char* cSrc);
-
-// get_version will get the "version" value associated with the collection's metadata
+// get_version will rerturn the dataset "version" used to create/manage the collection. If want a version associated with the collection itself see the codemeta.json file in the root folder of the collection.
 //
 extern char* get_version(char* cName);
-
-// set_contact will set the "contact" value associated with the collection's metadata
-//
-extern int set_contact(char* cName, char* cSrc);
-
-// get_contact will get the "contact" value associated with the collection's metadata
-//
-extern char* get_contact(char* cName);
 
 #ifdef __cplusplus
 }

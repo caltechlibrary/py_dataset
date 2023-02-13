@@ -24,6 +24,7 @@ py_dataset no longer supports the v1.1 branch of dataset development. It now sup
 - `frames()` (for listing available frames) became `frame_names()`
 - `frame_exists()` (for checking if a frame is defined) became `has_frame()`
 - `key_exists()` (for checking if a key is defined) became `has_key()`
+- `read()` nolonger takes a third parameter for `clean_object`, in v2 of dataset the JSON stored is NOT modified on create or update.
 
 ## Changes in return values
 
@@ -33,5 +34,7 @@ py_dataset no longer supports the v1.1 branch of dataset development. It now sup
 ## Dropped functions
 
 - `key_filter()` and `key_sort()` have been removed to changes in collections and additional storage systems (e.g. pairtree stores and sql JSON stores)
-
-
+_ `make_objects()` is dropped, use `create_objects` instead
+- `set_version()` is dropped, Namaste isn't being used for collection metadata, update the codemeta.json file instead
+- `set_who()`, `set_what()`, `set_where()`, `get_who()`, `get_what()` and `get_when()` dropped, Namaste isn't being used for metadata on collections, update the codemeta.json file instread
+- `frame_grid()` has been dropped, work with frame lists and do you table conversion in Python (e.g. use Python's excellent data science libraries)

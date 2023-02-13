@@ -3,7 +3,8 @@ import sys
 import os
 import shutil
 import json,csv
-from py_dataset import dataset
+from pathlib import Path
+from .py_dataset import dataset
 
 # Set this to false to aggregate test results, True
 # will stop test on first failure.
@@ -16,7 +17,9 @@ def test_basic(t, collection_name):
     '''test_basic(collection_name) runs tests on basic CRUD ops'''
     # Setup a test record
     key = "2488"
-    value = { "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
+    # NOTE: the JSON stored should have a key/id field if you need that,
+    # as of dataset v2 this is no longer injected.
+    value = { "key": key, "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
     
     # We should have an empty collection, we will create our test record.
     if dataset.create(collection_name, key, value) == False:
@@ -67,7 +70,8 @@ def test_basic(t, collection_name):
                t.error("Failed, expected {k} with a list for v, got {v}")
     
     # Test path to record
-    expected_s = "/".join([collection_name, "pairtree", "24", "88", (key+".json")])
+    cwd = f"{Path('.').resolve()}"
+    expected_s = "/".join([cwd, collection_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
     p = dataset.path(collection_name, key)
     if len(p) != expected_l:
@@ -112,6 +116,9 @@ def test_keys(t, collection_name):
     
     for k in test_records:
         v = test_records[k]
+        # NOTE: in dataset v2 key's are NOT injected into object,
+        # so we need to inject a key/id ourselves.
+        v['key'] = k
         if dataset.create(collection_name, k, v) == False:
             err = dataset.error_message()
             t.error("Failed, could not add", k, "to", collection_name, ', ', err)
@@ -146,7 +153,7 @@ def test_issue12(t, c_name):
             dataset.update(c_name, key, obj)
         else:            
             dataset.create(c_name, key, obj)
-    f_names = dataset.frames(c_name)
+    f_names = dataset.frame_names(c_name)
     for f_name in f_names:
         ok = dataset.delete_frame(c_name, f_name)
         if ok == False:
@@ -187,7 +194,7 @@ def test_issue12(t, c_name):
 # test_issue32() make sure issue 32 stays fixed.
 #
 def test_issue32(t, collection_name):
-    if dataset.create(collection_name, "k1", {"one":1}) == False:
+    if dataset.create(collection_name, "k1", {"id": "k1", "one":1}) == False:
         err = dataset.error_message()
         t.error("Failed to create k1 in", collection_name, ', ', err)
         return
@@ -222,9 +229,9 @@ def test_check_repair(t, collection_name):
         return
 
     if dataset.has_key(collection_name, 'one') == False:
-        if dataset.create(collection_name, 'one', {"one": 1}) == False:
+        if dataset.create(collection_name, 'one', {'id': 'one', "one": 1}) == False:
             err = dataset.error_message()
-            t.error(f'create({collection_name}, "one", {"one": 1}) failed, {err}')
+            t.error(f'create({collection_name}, "one", {"id": "one", "one": 1}) failed, {err}')
     t.print(f"Testing check on {collection_name}")
     # Check our collection
     if not (dataset.check(collection_name) == True):
@@ -255,11 +262,10 @@ def test_check_repair(t, collection_name):
 def test_attachments(t, collection_name):
     t.print("Testing attach, attachments, detach and prune")
     # Generate two files to attach.
-    with open('a1.txt', 'w') as text_file:
-        text_file.write('This is file a1')
-    with open('a2.txt', 'w') as text_file:
-        text_file.write('This is file a2')
-    filenames = ['a1.txt','a2.txt']
+    filenames = ['a1.txt', 'a2.txt']
+    for i, f_name in enumerate(filenames):
+        with open(f_name, 'w') as text_file:
+            text_file.write(f'This is file {f_name} ({i})' + "\n")
 
     if dataset.status(collection_name) == False:
         t.error("Failed,", collection_name, "missing")
@@ -269,7 +275,9 @@ def test_attachments(t, collection_name):
         t.error("Failed,", collection_name, "should have keys")
         return
 
+    print(f'DEBUG len(keys) -> {len(keys)}')
     key = keys[0]
+    print(f'DEBUG key -> {key}, attaching {filenames}')
     if dataset.attach(collection_name, key, filenames) == False:
         err = dataset.error_message()
         t.error("Failed, to attach files for", collection_name, key, filenames, ', ', err)
@@ -280,8 +288,8 @@ def test_attachments(t, collection_name):
         t.error("Failed, expected two attachments for", collection_name, key, "got", l)
         return
 
-    #Check that attachments arn't impacted by update
-    if dataset.update(collection_name, key, {"testing":"update"}) == False:
+    #Check that attachments should not be impacted by update
+    if dataset.update(collection_name, key, {"key": key, "testing":"update"}) == False:
         err = dataset.error_message()
         t.error("Failed, to update record", collection_name, key, err)
         return
@@ -342,8 +350,8 @@ def test_attachments(t, collection_name):
     
 def test_join(t, collection_name):
     key = "test_join1"
-    obj1 = { "one": 1}
-    obj2 = { "two": 2}
+    obj1 = { "id": key, "one": 1}
+    obj2 = { "id": key, "two": 2}
     if dataset.status(collection_name) == False:
         t.error("Failed, collection status is False,", collection_name)
         return
@@ -425,6 +433,7 @@ def test_issue43(t, collection_name, csv_name):
             }
     for key in table:
         row = table[key]
+        row['key'] = key # Save the key/id along with the row data
         if dataset.create(collection_name, key, row) == False:
             err = dataset.error_message()
             t.error(f"Can't add test row {key} to {collection_name}, {err}")
@@ -435,7 +444,7 @@ def test_issue43(t, collection_name, csv_name):
     frame_name = 'f1'
     keys = dataset.keys(collection_name)
     if dataset.frame_create(collection_name, frame_name, keys, 
-        ["._Key",".c1",".c2",".c3",".c4"], ["_Key", "c1", "c2", "c3", "c4"]) == False:
+        [".key",".c1",".c2",".c3",".c4"], ["key", "c1", "c2", "c3", "c4"]) == False:
         err = dataset.error_message()
         t.error(err)
         return
@@ -453,12 +462,12 @@ def test_issue43(t, collection_name, csv_name):
                 t.error(f'row error {csv_name} for {cells}')
 
 
-def test_clone_sample(t, c_name, sample_size, training_name, test_name):
+def test_clone_sample(t, c_name, sample_size, training_name, training_dsn, test_name, test_dsn):
     if os.path.exists(training_name):
         shutil.rmtree(training_name)
     if os.path.exists(test_name):
         shutil.rmtree(test_name)
-    if dataset.clone_sample(c_name, training_name, test_name, sample_size) == False:
+    if dataset.clone_sample(c_name, training_name, training_dsn, test_name, test_dsn, sample_size) == False:
         err = dataset.error_message()
         t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
 
@@ -476,8 +485,8 @@ def test_frame(t, c_name):
         { "id":    "D", "one":   "ONE", "two":   20, "three": 334.1, "four":  [] }
     ]
     keys = []
-    dot_paths = ["._Key", ".one", ".two", ".three", ".four"]
-    labels = ["_Key", "one", "two", "three", "four"]
+    dot_paths = [".id", ".one", ".two", ".three", ".four"]
+    labels = ["id", "one", "two", "three", "four"]
     for row in data:
         key = row['id']
         keys.append(key)
@@ -527,7 +536,7 @@ def test_frame_objects(t, c_name):
                 }], "two":   20, "three": 334.1, "four":  [] }
     ]
     keys = []
-    dot_paths = ["._Key",".nameIdentifiers",".nameIdentifiers[:].nameIdentifier",".two", ".three", ".four"]
+    dot_paths = [".id",".nameIdentifiers",".nameIdentifiers[:].nameIdentifier",".two", ".three", ".four"]
     labels = ["id","nameIdentifiers", "nameIdentifier", "two", "three", "four"]
     for row in data:
         key = row['id']
@@ -586,15 +595,15 @@ def test_sync_csv(t, c_name):
 
     # Setup test CSV instance
     t_data = [
-            { "_Key": "one", "value": 1 },
-            { "_Key": "two", "value": 2 },
-            { "_Key": "three", "value": 3  }
+            { "key": "one", "value": 1 },
+            { "key": "two", "value": 2 },
+            { "key": "three", "value": 3  }
     ]
     csv_name = c_name.strip(".ds") + ".csv"
     if os.path.exists(csv_name):
         os.remove(csv_name)
     with open(csv_name, 'w') as csvfile:
-        csv_writer = csv.DictWriter(csvfile, fieldnames = ["_Key", "value" ])
+        csv_writer = csv.DictWriter(csvfile, fieldnames = ["key", "value" ])
         csv_writer.writeheader()
         for obj in t_data:
             csv_writer.writerow(obj)
@@ -609,7 +618,7 @@ def test_sync_csv(t, c_name):
             t.error(f"expected has_key({key}) == True, got False")
     if dataset.has_key(c_name, "five") == True:
         t.error(f"expected has_key('five') == False, got True")
-    if dataset.create(c_name, "five", {"value": 5}) == False:
+    if dataset.create(c_name, "five", {"key": "five", "value": 5}) == False:
         err = dataset.error_message()
         t.error(f'create({c_name}, "five", {"value": 5}) failed, {err}')
         return
@@ -617,7 +626,7 @@ def test_sync_csv(t, c_name):
     # Setup frame
     frame_name = 'test_sync'
     keys = dataset.keys(c_name)
-    if dataset.frame_create(c_name, frame_name, keys, ["._Key", ".value"], ["_Key", "value"] ) == False:
+    if dataset.frame_create(c_name, frame_name, keys, [".key", ".value"], ["key", "value"] ) == False:
         err = dataset.error_message()
         t.error(f'frame_create({c_name}, {frame_name}, ...) failed, {err}')
         return
@@ -736,7 +745,8 @@ if __name__ == "__main__":
     test_runner.add(test_attachments, [collection_name])
     test_runner.add(test_join, [collection_name])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
-    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "test_test.ds"])
+    # NOTE: simple cloning requires a DSN for training and test datasets
+    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "", "test_test.ds", ""])
     test_runner.add(test_frame, ["test_frame.ds"])
     test_runner.add(test_frame_objects, ["test_frame.ds"])
     test_runner.add(test_sync_csv, ["test_sync_csv.ds"])

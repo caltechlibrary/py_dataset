@@ -24,23 +24,33 @@ import os
 import json
 from ctypes import CDLL, c_char_p, c_int, c_bool
 
+# NOTE: Assemble our library name based on CPU type and extension.
+# Currently we're supporting libdataset for Windows and Linux on
+# Intel only but for macOS we include both Intel and M1 support via
+# the cpu types of "amd64" and "arm64"
+
 # Figure out shared library extension
 go_basename = 'lib/libdataset'
+cpu = 'amd64'
 ext = '.so'
 if sys.platform.startswith('win'):
+    cpu = 'amd64'
     ext = '.dll'
 if sys.platform.startswith('darwin'):
     #M1 mac uses a special dylib
     if platform.processor() == 'arm':
-        ext = '-arm.dylib'
+        cpu = 'arm64'
+        ext = '.dylib'
     else:
+        cpu = 'amd64'
         ext = '.dylib'
 if sys.platform.startswith('linux'):
+    cpu = 'amd64'
     ext = '.so'
 
 # Find our shared library and load it
 dir_path = os.path.dirname(os.path.realpath(__file__))
-libdataset = CDLL(os.path.join(dir_path, go_basename+ext))
+libdataset = CDLL(os.path.join(dir_path, f'{go_basename}-{cpu}{ext}'))
 
 #
 # Setup our Go functions to be nicely wrapped
@@ -100,8 +110,8 @@ libdataset.verbose_off.restype = c_bool
 
 # init_collection() creates a dataset collection.
 #
-# Args: collection_name (string)
-libdataset.init_collection.argtypes = [ c_char_p ]
+# Args: collection_name (string), dsn (string)
+libdataset.init_collection.argtypes = [ c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.init_collection.restype = c_bool
 
@@ -152,15 +162,6 @@ libdataset.read_object.argtypes = [ c_char_p, c_char_p, c_bool ]
 # Returns: string (JSON source)
 libdataset.read_object.restype = c_char_p
 
-# read_object_list() returns a list of objects for the provided keys 
-# in the collection.
-#
-# Args: collection_name (string), keys (list of key strings AS JSON), 
-#       clean_object (bool)
-libdataset.read_object_list.argtypes = [ c_char_p, c_char_p, c_bool ]
-# Returns: string (JSON source)
-libdataset.read_object_list.restype = c_char_p
-
 # update_object() updates an object in the collection given a key
 # and new object.
 #
@@ -176,12 +177,12 @@ libdataset.delete_object.argtypes = [ c_char_p, c_char_p ]
 # Returns: True (1), False (0)
 libdataset.delete_object.restype = c_bool
 
-# key_exists() tests for a key in a collection.
+# has_key() tests for a key in a collection.
 #
 # Args: collection_name (string), key (string)
-libdataset.key_exists.argtypes = [ c_char_p, c_char_p ]
+libdataset.has_key.argtypes = [ c_char_p, c_char_p ]
 # Returns: True (1), False (0)
-libdataset.key_exists.restype = c_bool
+libdataset.has_key.restype = c_bool
 
 # keys() returns a list of all keys in a collection.
 #
@@ -275,8 +276,8 @@ libdataset.repair_collection.restype = c_bool
 
 # attach() adds a file to a JSON object record.
 #
-# Args: collection_name (string), key (string), semver (string), filenames (string)
-libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), filenames (string)
+libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.attach.restype = c_bool
 
@@ -289,15 +290,15 @@ libdataset.attachments.restype = c_char_p
 
 # detach() retrieves a file from an JSON object record.
 #
-# Args: collection_name (string), key (string), semver (string), basename (string)
-libdataset.detach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), basename (string)
+libdataset.detach.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.detach.restype = c_bool
 
 # prune() removes a file from a JSON object record.
 #
-# Args: collection_name (string), key (string), semver (string) basename (string)
-libdataset.prune.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), basename (string)
+libdataset.prune.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.prune.restype = c_bool
 
@@ -310,16 +311,16 @@ libdataset.join_objects.restype = c_bool
 
 # clone_collection() takes collection and creates a copy of it.
 #
-# Args: collection_name (string), new_collection_name (string), ????
-libdataset.clone_collection.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), new_collection_name (string), new_dsn (string), ????
+libdataset.clone_collection.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.clone_collection.restype = c_bool
 
 # clone_sample() generates a random sample of objects split between 
 # training and test collections.
 # 
-# Args: collection_name (string), new_sample_collection_name (string), new_rest_collection_name (string), sample size ????
-libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_bool ]
+# Args: collection_name (string), sample_collection_name (string), sample_dsn (string), test_collection_name (string), test_dsn (string), sample size ????
+libdataset.clone_sample.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p, c_char_p, c_bool ]
 # Returns: True (1) or False (0)
 libdataset.clone_sample.restype = c_bool
 
@@ -338,12 +339,12 @@ libdataset.frame_create.argtypes = [ c_char_p, c_char_p,  c_char_p, c_char_p, c_
 # Returns: value (JSON object source)
 libdataset.frame_create.restype = c_bool
 
-# frame_exists() checks to see if a frame name has already been defined.
+# has_frame() checks to see if a frame name has already been defined.
 #
 # Args: collection_name (string), frame_name (string)
-libdataset.frame_exists.argtypes = [ c_char_p, c_char_p ]
+libdataset.has_frame.argtypes = [ c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
-libdataset.frame_exists.restype = c_bool
+libdataset.has_frame.restype = c_bool
 
 # frame_keys() returns a list of keys as JSON as defined in the
 # data frame.
@@ -361,12 +362,12 @@ libdataset.frame_objects.argtypes = [ c_char_p, c_char_p ]
 # Returns: string (JSON object source)
 libdataset.frame_objects.restype = c_char_p
 
-# frames() returns a list of frames defined for the collection.
+# frame_names() returns a list of frames defined for the collection.
 #
 # Args: collection_name (string)
-libdataset.frames.argtypes = [ c_char_p ]
+libdataset.frame_names.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
-libdataset.frames.restype = c_char_p
+libdataset.frame_names.restype = c_char_p
 
 # frame_refresh() updates the objects in a data frame based on
 # the current state of the collection. Any objects removed from
@@ -398,14 +399,6 @@ libdataset.frame_clear.argtypes = [ c_char_p, c_char_p]
 # Returns: True (1) or False (0)
 libdataset.frame_clear.restype = c_bool
 
-# frame_grid() returns a frames object list as a 2D array of
-# columns per field.
-#
-# Args: collection_name (string), frame_name (string), include header (bool)
-libdataset.frame_grid.argtypes = [ c_char_p, c_char_p, c_bool ]
-# Returns: string (JSON Array Source)
-libdataset.frame_grid.restype = c_char_p
-
 # create_objects() generates a batch of objects in a collection,
 # used for testing libdataset.
 #
@@ -422,87 +415,10 @@ libdataset.update_objects.argtypes = [ c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.update_objects.restype = c_bool
 
-# set_who() sets the Namaste value for "Who".
-#
-# Args: collection_name (string), names_as_json (string)
-libdataset.set_who.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) or False (0)
-libdataset.set_who.restype = c_bool
-
-# set_what() sets the Namaste value for "What"
-#
-# Args: collection_name (string), what value (string)
-libdataset.set_what.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) or False (0)
-libdataset.set_what.restype = c_bool
-
-# set_when() sets the Namaste value for "When"
-#
-# Args: collection_name (string), when value (string)
-libdataset.set_when.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) or False (0)
-libdataset.set_when.restype = c_bool
-
-# set_where() sets the Namaste value for "Where"
-#
-# Args: collection_name (string), where value (string)
-libdataset.set_where.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) or False (0)
-libdataset.set_where.restype = c_bool
-
-# set_version() sets the version for the collection data.
-# It is recommended you use a semver.
-#
-# Args: collection_name (string), version value (string)
-libdataset.set_version.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) or False (0)
-libdataset.set_version.restype = c_bool
-
-# set_contact() sets the contact info for a collection.
-#
-# Args: collection_name (string), contact value (string)
-libdataset.set_contact.argtypes = [ c_char_p, c_char_p ]
-# Returns: True (1) or False (0)
-libdataset.set_contact.restype = c_bool
-
-# get_who() returns the Namaste value for "Whot"
-#
-# Args: collection_name (string)
-libdataset.get_who.argtypes = [ c_char_p ]
-# Returns: string (JSON Array Source)
-libdataset.get_who.restype = c_char_p
-
-# get_what() returns the Namaste value for "What"
-# Args: collection_name (string)
-libdataset.get_what.argtypes = [ c_char_p ]
-# Returns: string (JSON Array Source)
-libdataset.get_what.restype = c_char_p
-
-# get_where() returns the Namaste value for "Where"
-#
-# Args: collection_name (string)
-libdataset.get_where.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_where.restype = c_char_p
-
-# get_when() returns the Namaste value for "When"
-#
-# Args: collection_name (string)
-libdataset.get_when.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_when.restype = c_char_p
-
 # get_version() returns the version information for the collection.
 #
 # Args: collection_name (string)
 libdataset.get_version.argtypes = [ c_char_p ]
 # Returns: frame names (JSON Array Source)
 libdataset.get_version.restype = c_char_p
-
-# get_contact() returns the contact info for a collection.
-#
-# Args: collection_name (string)
-libdataset.get_contact.argtypes = [ c_char_p ]
-# Returns: frame names (JSON Array Source)
-libdataset.get_contact.restype = c_char_p
 

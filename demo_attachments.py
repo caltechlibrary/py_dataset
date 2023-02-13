@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
+import os
 from py_dataset import dataset
+
 
 c_name = 't3.ds'
 key = 'a1'
-v = 'v0.1.1'
-obj = {'one':key}
+obj = {'key': key, 'one':key}
 f_name = 'README.md'
-dataset.init(c_name)
+if not os.path.exists(c_name):
+    dataset.init(c_name, '')
 dataset.create(c_name, key, obj)
 keys = dataset.keys(c_name)
 print(keys)
