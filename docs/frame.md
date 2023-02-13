@@ -1,7 +1,7 @@
 
 [up](./)
 
-# frame_create() and frame(), has_frame()
+# frame_create() and frame(), has_frame(), frame_names()
 
 Data frames are a way of creating ordered subsets of JSON objects
 in a dataset collection. A data frame is defined by a list of keys
@@ -72,4 +72,12 @@ a frame exists in a collection.
         print("Frame is missing")
 ```
 
+
+
+To get a list of frames associated with a collection use `frame_names()`.
+
+```python
+    for i, frame_name in enumerate(dataset.frame_names(c_name)):
+        print(f"{i} - {frame_name}")
+```
 

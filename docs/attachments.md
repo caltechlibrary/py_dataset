@@ -18,22 +18,17 @@ you handle versioning when some types of collections need it for attachments
 and others don't? 
 
 The **dataset** command line tool and related Go package store the 
-attachments unversioned by default in the pairtree. The metadata
-about the attached document is stored in a sub folder `_docs`.
-The unversioned attached document is stored in `v0.0.0` folder.
-The attached document is stored by its basename.  The basename must 
-be unique among the documents attached otherwise it will be overwritten 
-when attaching another document using the same basename.
+attachments based on the collection's version seetings. By default
+collections do not version JSON records or attachments. The versions
+are incremented based on wither collection level versioning is turned on as "patch", "minor" or "major" version increments. This setting, when set,
+will impact future JSON document or attachment changes by incrementing the
+semver accordingly.  The default version number is "v0.0.0", if patch level versioning is enabled it will mean the next version stored is "v0.0.1", if
+minor versioning is inabled then the next version after "v0.0.0" is "v0.1.0",
+if major version is inabled then the next version after "v0.0.0" is "v1.0.0".  Not with the changes to v2 of dataset you do not normally need to directly specify versions. It just happens automatically when you change something. To turn off versioning on the collection then you'd set the versioning value to an empty string. Any historic versions remaining but future actions will not be versioned.
 
-If you need versioning you MUST supply a valid [semver](https://semver.org)
-when attaching the document. The metadata for the attached document will 
-be in `_docs` as before but the document will be stored in a sub directory 
-indicated by the semver.  The basename must be unique to the semver 
-provided otherwise the document with the same basename using that semver 
-will be overwritten.
+## Working example
 
-It is easier to see with this example. We have a dataset collection
-called "Sea-Mamals.ds". We have a JSON object stored called "walrus".
+We have a dataset collection called "Sea-Mamals.ds" with versioning enabled at the patch level. We have a JSON object stored called "walrus".
 We want to attach "notes-on-walrus.docx" which is on our local
 drive under "/Users/fred/Documents/notes-on-walrus.docx".
 
@@ -43,136 +38,62 @@ Using the **py_dataset** you issue the follow command --
     from py_dataset import dataset
     c_name = "Sea-Mammals.ds"
     key = "walrus"
-    semver = 'v0.0.0'
+    # NOTE: the default version is 'v0.0.0', we'll be incrementing
+    # the patch level with is the last zero.
     obj = '{"description": "may have tusks", "size": "impressive"}'
     if not dataset.status(c_name):
         dataset.init(c_name)
     if not dataset.create(c_name, key, obj)
         print(f'failed to create {key}, {dataset.error_message()}')
         exit()
-    if not dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ], semver)
+    if not dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx'])
         print(f'failed to attach to {key}, {dataset.error_message()}')
         exit()
 ```
 
-The results in a simple directory stricture for the JSON object and attachment.
+If you looked on the file system where the collection resides you'll see an attachments sudirectory, a pair tree path ending in a directory holding the attachment base name, the value of the attach will be named "v0.0.1", "v0.0.2", etc depending up the updates made to it. It is a naive version system and does NOT perform diffs between the objects. This is really important because if you store a 2 Gig object then store new version of of a 2Gig object you need to have enough file system room for both copies!!!
 
 ```
     Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
+    Sea-Mamanls/pairtree/wa/lr/us/notes-on-walrus.docs/v0.0.1
 ```
 
 In this example the metadata for the attachment is updated in the walrus.json file.
-Since no versioning was specified for "notes-on-walrus.docx" it is stored as version
-v0.0.0.
 
 If we had added our attachment including a semver the directory structure
 will be slightly more complex.
 
 ```shell
-    if not dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ], 'v0.0.1'):
+    if not dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ]):
         print(dataset.error_message())
 ```
 
 This will cause additional sub directories to exist (if they haven't be created
-before). Our "unversioned" version still exists as v0.0.0 but now we have v0.0.1.
-Our attachment metadata file in our JSON object file will now include an href 
-pointing to v0.0.1 and a map to all versions including v0.0.0.
+before). When you detach the "notes-on-walrus.docx" file is detaches as "notes-on-walruls.docs" and does not include the version number.
 
 ```
     Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
+    Sea-Mamanls/pairtree/wa/lr/us/notes-on-walrus.docx/v0.0.1
+    Sea-Mamanls/pairtree/wa/lr/us/notes-on-walrus.docx/v0.0.2
 ```
 
-If we later add a v0.0.2 of "notes-on-walrus.docx" it'd looks like
+If we later add a v0.0.3 of "notes-on-walrus.docx" it'd looks like
 
 ```
     Sea-Mamanls/pairtree/wa/lr/us/walrus.json
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.0/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.1/notes-on-walrus.docx
-    Sea-Mamanls/pairtree/wa/lr/us/v0.0.2/notes-on-walrus.docx
+    Sea-Mamanls/pairtree/wa/lr/us/notes-on-walrus.docx/v0.0.1
+    Sea-Mamanls/pairtree/wa/lr/us/notes-on-walrus.docx/v0.0.2
+    Sea-Mamanls/pairtree/wa/lr/us/notes-on-walrus.docx/v0.0.3
 ```
 
 All the metadata about the files attached are stored in 
-the primary JSON document under the attribute `_Attachments`.
-In the metadata we include an "href" string and "version_hrefs" map. The
-version_href will point to all known versions keyed by the semver. The
-href string will point to the last version added, in this case v0.0.2.
+the primary attachments sub directory in a pairtree. This is tree even
+when you use a SQL store for storing JSON documents.
 
-IMPORTANT: If you provide the same semver and attach a file with the same
-basename the previously stored version will be overwritten. Example if we
-issue our original unversioned command the v0.0.0 copy of "notes-on-walrus.docx" will be overwritten!
+NOTE: As of v2 **dataset** attachment versioning is automatic if set for the collection.
 
-**dataset** attachment versioning is user driven. The only implicit version
-is v0.0.0 if no semver is provided. **dataset** is not a substitute
-for a version control system like [Subversion]() or [Git]() and is not
-substitute for a versioned file systems like [ZFS](). If your
-program needs to avoid overwriting an existing version or to "auto increment"
-the semver you need to check the existing versions and decide what the
-new version will be before attaching the new version of the document.
+If you want good version control is is recommended NOT to use dataset versioning but instead opt for a proven solution like Git, Subversion or ZFS. Dataset versioning is highly experimental.
 
-The semver versioned dircetories may contain more than one attached document.
-The documents attached can be of various versions though if you attach 
-more than one document at a time they will carry the same semver. This is because
-their is an implied semver is v0.0.0 when using the command line without semver 
-**dataset** otherwise the first valid semver is used for all files being attached in that
-command execution.
+NOTE: The href in the attachments metadata always points at the last attached version.
 
-NOTE: The href in the attachments metadata always points at the last attached 
-version.
-
-## How Attachments look in the JSON Object
-
-When you retrieve a JSON object **dataset** will add some internal fields.
-The first is a `_Key` and if you have any attachments a `_Attachments` array
-will be added. The later holds the metadata we create during the attachment process.
-
-Let's look at our first example again in detail.
-
-```shell
-    dataset.create(c_name, key, obj)
-    dataset.attach(c_name, key, [ '/Users/fred/Documents/notes-on-walrus.docx' ], 'v0.0.0' )
-```
-
-The JSON object created by the two command looks like
-
-```json
-    {
-        "_Key": "walrus",
-        "description": "may have tusks",
-        "size": "impressive",
-        "_Attachments": [
-            {
-                "name": "notes-on-walrus.docx",
-                "href": "v0.0.0/notes-on-walrus.docx",
-                "version_hrefs": {
-                    "v0.0.0": "v0.0.0/notes-on-walrus.docx"
-                },
-                ...
-            }
-        ]
-    }
-```
-
-When we added v0.0.1 the object would change shape and be something like
-
-```json
-    {
-        "_Key": "walrus",
-        "description": "may have tusks",
-        "size": "impressive",
-        "_Attachments": [
-            {
-                "name": "notes-on-walrus.docx",
-                "href": "v0.0.1/notes-on-walrus.docx",
-                "version_hrefs": {
-                    "v0.0.0": "v0.0.0/notes-on-walrus.docx",
-                    "v0.0.1": "v0.0.1/notes-on-walrus.docx"
-                },
-                ...
-            }
-        ]
-    }
-```
 

@@ -48,7 +48,7 @@ automatically.
 
 ## Quick Tutorial
 
-This module provides the functionality of the _dataset_ command line tool as a Python 3.8 module.
+This module provides the functionality of the _dataset_ command line tool as a Python 3.10 module.
 Once installed try out the following commands to see if everything is in order (or to get familier with
 _dataset_).
 

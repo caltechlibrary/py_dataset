@@ -3,6 +3,8 @@
 
 ## Filters and sorts
 
+(THIS WAS DEPRECIATED AND IS NO LONGER SUPPORTED)
+
 `dataset.keys()` method returns all keys in a collection. It is
 fast because it is part of the collection's metadata. Sometimes
 you want a subset of the data and for that you can use `key_filter()`

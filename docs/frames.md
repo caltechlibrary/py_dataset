@@ -1,7 +1,7 @@
 
 [up](./)
 
-# frames
+# frames is now frame_names
 
 Lists the frames available in a collection. 
 

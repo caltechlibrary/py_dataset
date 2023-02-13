@@ -3,7 +3,7 @@
 
 ## Joining Objects
 
-You can augement JSON key/value pairs for a JSON document in your 
+You can augment JSON key/value pairs for a JSON document in your 
 collection using the join operation. This works similar to the datatools 
 cli called jsonjoin.
 

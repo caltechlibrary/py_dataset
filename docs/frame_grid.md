@@ -3,6 +3,8 @@
 
 # frame_grid
 
+(THIS WAS DEPRECIATED)
+
 Sometimes it is useful to have a table like view our our data frame
 data. This is provided with the `frame_grid()` method. It takes
 the same parameters as the `frame_object()` and `frame()` methods.

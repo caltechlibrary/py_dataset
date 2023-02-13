@@ -31,9 +31,6 @@
 [has_keys](keys.html)
 : Checks to see if a key/object exists in a collection
 
-[key_filter and key_sort](key_filter-and-key_sort.html)
-: Given a list of keys, you can filter and sort the based on object values
-
 ## Merging objects
 
 [join](join.html)
@@ -52,9 +49,6 @@
 
 [frame_objects](frame_objects.html)
 : Return a list of framed objects
-
-[frame_grid](frame_grid.html)
-: Return a 2D array of framed objects and their values
 
 [frames](frames.html)
 : List the frames available in a collection

@@ -28,7 +28,7 @@ a record called "littlefreda.json" and reading it back.
 
     # Creating our friends.ds dataset collection for the first time.
     c_name = 'friends.ds'
-    if not dataset.init(c_name):
+    if not dataset.init(c_name, dsn = ""):
         print(dataset.error_message())
         sys.exit(1)
 
@@ -54,7 +54,7 @@ a record called "littlefreda.json" and reading it back.
         print(f"Doc: {record}")
 ```
 
-The command `dataset.init(c_name)`, `dataset.keys(c_name)`, 
+The command `dataset.init(c_name, dsn = "")`, `dataset.keys(c_name)`, 
 `dataset.read(c_name, key)` `dataset.create(c_name, key)` are the
 main actors here.  Most dataset methods require 
 the collection name as the first parameter.  Likewise many return
@@ -94,42 +94,8 @@ created.
         print("")
 ```
 
-It is also possible to filter and sort keys from python by
-providing extra parameters to the keys method. First
-we'll display a list of keys filtered by email ending
-in "example.org" then sorted by email.
+NOTE: In v2 of dataset there is no internal mechansim for filting
+and sorta keys. If you need that you should create a data frame,
+read the data frame out and manipulate it.  Internal sorting and
+filtering just proved too slow.
 
-```python
-    print("Filtered and sorting in action")
-    # Get all keys
-    keys = dataset.keys(c_name)
-    # Fitler our keys
-    keys = dataset.key_filter(c_name, keys, '(has_suffix .email "example.org")')
-    for key in keys:
-        print(f"Path: {dataset.path(c_name, key)}")
-        print(f"Doc: {dataset.read(c_name, key)}")
-        print("")
-    print(f"Filtered {keys}") 
-    # Sort our filtered list of keys
-    keys = dataset.key_sort(c_nane, keys, '.email')
-    print(f"Sorted {keys}")
-    for key in keys:
-        print(f"Path: {dataset.path(c_name, key)}")
-        print(f"Doc: {dataset.read(c_name, key)}")
-        print("")
-```
-
-Filter and sorting a large collection can take time due to the
-number of disc reads. It can also use allot of memory. It is more
-effecient to first filter your keys then sort the filtered keys.
-
-```python
-    print(f"Filtered, sort by stages")
-    all_keys = dataset.keys(c_name)
-    keys = dataset.key_filter(c_name, keys, '(has_suffix .email "example.org")')
-    keys = dataset.key_sort(c_name, keys, ".email")
-    for key in keys:
-        print(f"Path: {dataset.path(c_name, key)}")
-        print(f"Doc: {dataset.read(c_name, key)}")
-        print("")
-```

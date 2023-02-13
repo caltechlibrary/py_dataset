@@ -26,38 +26,19 @@ We need to have a collection name, e.g. `things.ds`. The extension
 ```
     # We're going to save our collection name for latter
     c_name = 'things.ds' 
-    if not dataset.init(c_name):
+    dsn = "" # Use a pairtree to store the collection.
+    if not dataset.init(c_name, dsn):
         print(dataset.error_message())
 ```
 
 At this point you should have a directory (folder) on your file
-system called "things.ds" it will contain a collection.json file.
+system called "things.ds" it will contain a collection.json file and
+several other JSON documents for managing the collection.
 
 ## Annotating your collection with metadata
 
-The library will try to guess some metadata about the collection
-based on the environment where your script is running. E.g. 
-it will use the current date and time to record when the collection
-was created. On Unix-like systems it'll also add the creating
-user as a creator of the collection.
-
-Metadata for the collection is based around the concept in
-libraries and archival software called "namaste" or Name as text.
-This was pioneered by the developers at the California Digital Library.
-See [Namaste](https://confluence.ucop.edu/display/Curation/Namaste).
-
-`py_dataset` supports the following namaste style attributes --
-who, what, when, where
-
-```python
-    dataset.set_who(c_name, "Jane Doe")
-```
-
-You can retreive this metadata with `get_who()`
-
-```python
-    who = dataset.get_who(c_name)
-```
-
-"whats", "when", "where" work as follows
+When you create a new collection a "codemeta.json" file is created
+and placed in the root folder along side the "collection.json" file.
+You can edit the codemeta.json file directory to maintain metadata
+about the collection itself.
 
