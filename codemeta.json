@@ -6,13 +6,16 @@
     "codeRepository": "https://github.com/caltechlibrary/py_dataset",
     "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "1.0.1",
+    "version": "1.0.2-alpha",
     "author": [
         {
             "@type": "Person",
             "givenName": "Robert",
             "familyName": "Doiel",
-            "affiliation": "Caltech Library",
+      		"affiliation": {
+        		"@type": "Organization",
+        		"name": "Caltech Library"
+      		},
             "email": "rsdoiel@caltech.edu",
             "@id": "https://orcid.org/0000-0003-0900-6903"
         },
@@ -20,7 +23,10 @@
             "@type": "Person",
             "givenName": "Thomas E",
             "familyName": "Morrell",
-            "affiliation": "Caltech Library",
+      		"affiliation": {
+        		"@type": "Organization",
+        		"name": "Caltech Library"
+      		},
             "email": "tmorrell@caltech.edu",
             "@id": "https://orcid.org/0000-0001-9266-5146"
         }
@@ -34,7 +40,30 @@
         "software",
         "json"
     ],
-    "maintainer": "https://orcid.org/0000-0003-0900-6903",
+    "maintainer": [
+        {   
+            "@type": "Person",
+            "givenName": "R. S.",
+            "familyName": "Doiel",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },  
+            "email": "rsdoiel@caltech.edu",
+            "@id": "https://orcid.org/0000-0003-0900-6903"
+        },  
+        {   
+            "@type": "Person",
+            "givenName": "Thomas E",
+            "familyName": "Morrell",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },  
+            "email": "tmorrell@caltech.edu",
+            "@id": "https://orcid.org/0000-0001-9266-5146"
+        }   
+    ],
     "programmingLanguage": [
         "Go",
         "Python"
