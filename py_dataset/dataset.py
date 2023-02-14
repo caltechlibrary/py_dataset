@@ -236,12 +236,15 @@ def check(collection_name):
 def repair(collection_name):
     return libdataset.repair_collection(c_char_p(collection_name.encode('utf8')))
 
-def attach(collection_name, key, filenames = []):
+def attach(collection_name, key, filenames = [], semver = ''):
+    if semver == '':
+        semver = 'v0.0.0'
     srcFNames = json.dumps(filenames)
     if not isinstance(srcFNames, bytes):
         srcFNames = srcFNames.encode('utf8')
-    return libdataset.attach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(srcFNames))
-    
+    print(f'DEBUG srcFNames -> {srcFNames}')
+    return libdataset.attach(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')), c_char_p(semver.encode('utf8')), c_char_p(srcFNames))
+
 def attachments(collection_name, key):
     value = libdataset.attachments(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')))
     if not isinstance(value, bytes):

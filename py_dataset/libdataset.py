@@ -276,8 +276,8 @@ libdataset.repair_collection.restype = c_bool
 
 # attach() adds a file to a JSON object record.
 #
-# Args: collection_name (string), key (string), filenames (string)
-libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p ]
+# Args: collection_name (string), key (string), semvar(string), filenames (string)
+libdataset.attach.argtypes = [ c_char_p, c_char_p, c_char_p, c_char_p ]
 # Returns: True (1) or False (0)
 libdataset.attach.restype = c_bool
 

@@ -4,17 +4,17 @@ import os
 import shutil
 import json,csv
 from pathlib import Path
-from .py_dataset import dataset
+from py_dataset import dataset
 
 # Set this to false to aggregate test results, True
 # will stop test on first failure.
 fail_fast = True
 
 #
-# test_basic(collection_name) runs tests on basic CRUD ops
+# test_basic(c_name) runs tests on basic CRUD ops
 # 
-def test_basic(t, collection_name):
-    '''test_basic(collection_name) runs tests on basic CRUD ops'''
+def test_basic(t, c_name):
+    '''test_basic(c_name) runs tests on basic CRUD ops'''
     # Setup a test record
     key = "2488"
     # NOTE: the JSON stored should have a key/id field if you need that,
@@ -22,21 +22,21 @@ def test_basic(t, collection_name):
     value = { "key": key, "title": "Twenty Thousand Leagues Under the Seas: An Underwater Tour of the World", "formats": ["epub","kindle","plain text"], "authors": [{ "given": "Jules", "family": "Verne" }], "url": "https://www.gutenberg.org/ebooks/2488"}
     
     # We should have an empty collection, we will create our test record.
-    if dataset.create(collection_name, key, value) == False:
+    if dataset.create(c_name, key, value) == False:
         err = dataset.error_message()
-        t.error(f'create({collection_name}, {key}, {value}) failed, {err}')
+        t.error(f'create({c_name}, {key}, {value}) failed, {err}')
         return 
     
     # Check to see that we have only one record
-    key_count = dataset.count(collection_name)
+    key_count = dataset.count(c_name)
     if key_count != 1:
         t.error(f"Failed, expected count to be 1, got {key_count}")
     
     # Do a minimal test to see if the record looks like it has content
-    keyList = dataset.keys(collection_name)
-    rec, err = dataset.read(collection_name, key)
+    keyList = dataset.keys(c_name)
+    rec, err = dataset.read(c_name, key)
     if err != "":
-        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
+        t.error(f"Unexpected error for {key} in {c_name}, {err}")
     for k, v in value.items():
        if not isinstance(v, list):
             if k in rec and rec[k] == v:
@@ -51,12 +51,12 @@ def test_basic(t, collection_name):
     
     # Test updating record
     value["verified"] = True
-    if dataset.update(collection_name, key, value) == False:
+    if dataset.update(c_name, key, value) == False:
        err = dataset.error_message()
-       t.error(f"update({collection_name}, {key}, {value}) failed, {err}")
-    rec, err = dataset.read(collection_name, key)
+       t.error(f"update({c_name}, {key}, {value}) failed, {err}")
+    rec, err = dataset.read(c_name, key)
     if err != "":
-        t.error(f"Unexpected error for {key} in {collection_name}, {err}")
+        t.error(f"Unexpected error for {key} in {c_name}, {err}")
     for k, v in value.items():
        if not isinstance(v, list):
            if k in rec and rec[k] == v:
@@ -71,34 +71,34 @@ def test_basic(t, collection_name):
     
     # Test path to record
     cwd = f"{Path('.').resolve()}"
-    expected_s = "/".join([cwd, collection_name, "pairtree", "24", "88", (key+".json")])
+    expected_s = "/".join([cwd, c_name, "pairtree", "24", "88", (key+".json")])
     expected_l = len(expected_s)
-    p = dataset.path(collection_name, key)
+    p = dataset.path(c_name, key)
     if len(p) != expected_l:
         t.error("Failed, expected length", expected_l, "got", len(p))
     if p != expected_s:
         t.error("Failed, expected", expected_s, "got", p)
 
     # Test listing records
-    l = dataset.list(collection_name, [key])
+    l = dataset.list(c_name, [key])
     if len(l) != 1:
-        t.error(f"list({collection_name}, [{key}]) failed, list should return an array of one record, got", l)
+        t.error(f"list({c_name}, [{key}]) failed, list should return an array of one record, got", l)
         return
 
     # test deleting a record
-    if dataset.delete(collection_name, key) == False:
+    if dataset.delete(c_name, key) == False:
         err = dataset.error_message()
         t.error("Failed, could not delete record", key, ", ", err)
     
 
 #
-# test_keys(t, collection_name) test getting, filter and sorting keys
+# test_keys(t, c_name) test getting, filter and sorting keys
 #
-def test_keys(t, collection_name):
-    '''test_keys(collection_name) test getting, filter and sorting keys'''
+def test_keys(t, c_name):
+    '''test_keys(c_name) test getting, filter and sorting keys'''
     # Test count after delete
-    key_list = dataset.keys(collection_name)
-    cnt = dataset.count(collection_name)
+    key_list = dataset.keys(c_name)
+    cnt = dataset.count(c_name)
     if cnt != 0:
         t.error("Failed, expected zero records, got", cnt, key_list)
     
@@ -119,12 +119,12 @@ def test_keys(t, collection_name):
         # NOTE: in dataset v2 key's are NOT injected into object,
         # so we need to inject a key/id ourselves.
         v['key'] = k
-        if dataset.create(collection_name, k, v) == False:
+        if dataset.create(c_name, k, v) == False:
             err = dataset.error_message()
-            t.error("Failed, could not add", k, "to", collection_name, ', ', err)
+            t.error("Failed, could not add", k, "to", c_name, ', ', err)
     
     # Test keys
-    all_keys = dataset.keys(collection_name)
+    all_keys = dataset.keys(c_name)
     if len(all_keys) != test_count:
         t.error("Expected", test_count,"all_keys back, got", keys)
     
@@ -193,73 +193,73 @@ def test_issue12(t, c_name):
 #
 # test_issue32() make sure issue 32 stays fixed.
 #
-def test_issue32(t, collection_name):
-    if dataset.create(collection_name, "k1", {"id": "k1", "one":1}) == False:
+def test_issue32(t, c_name):
+    if dataset.create(c_name, "k1", {"id": "k1", "one":1}) == False:
         err = dataset.error_message()
-        t.error("Failed to create k1 in", collection_name, ', ', err)
+        t.error("Failed to create k1 in", c_name, ', ', err)
         return
-    if dataset.has_key(collection_name, "k1") == False:
+    if dataset.has_key(c_name, "k1") == False:
         t.error("Failed, has_key k1 should return", True)
-    if dataset.has_key(collection_name, "k2") == True:
+    if dataset.has_key(c_name, "k2") == True:
         t.error("Failed, has_key k2 should return", False)
 
 # Setup our test collection, recreate it if necessary
-def test_setup(t, collection_name):
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
-    if dataset.init(collection_name) == False:
+def test_setup(t, c_name):
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
+    if dataset.init(c_name) == False:
         err = dataset.error_message()
-        t.error("init({collection_name}) failed, {err}")
+        t.error("init({c_name}) failed, {err}")
         return
 
 
-def test_check_repair(t, collection_name):
-    t.print("Testing status on", collection_name)
+def test_check_repair(t, c_name):
+    t.print("Testing status on", c_name)
     # Make sure we have a left over collection to check and repair
-    if os.path.exists(collection_name) == True:
-        shutil.rmtree(collection_name)
-    if dataset.status(collection_name) == True:
-        dataset.close(collection_name)
-    if dataset.init(collection_name) == False:
+    if os.path.exists(c_name) == True:
+        shutil.rmtree(c_name)
+    if dataset.status(c_name) == True:
+        dataset.close(c_name)
+    if dataset.init(c_name) == False:
         err = dataset.error_message()
-        t.error(f'init({collection_name}) failed, {err}')
+        t.error(f'init({c_name}) failed, {err}')
         return
-    if dataset.status(collection_name) == False:
-        t.error(f"Failed, expected dataset.status() == True, got False for {collection_name}")
+    if dataset.status(c_name) == False:
+        t.error(f"Failed, expected dataset.status() == True, got False for {c_name}")
         return
 
-    if dataset.has_key(collection_name, 'one') == False:
-        if dataset.create(collection_name, 'one', {'id': 'one', "one": 1}) == False:
+    if dataset.has_key(c_name, 'one') == False:
+        if dataset.create(c_name, 'one', {'id': 'one', "one": 1}) == False:
             err = dataset.error_message()
-            t.error(f'create({collection_name}, "one", {"id": "one", "one": 1}) failed, {err}')
-    t.print(f"Testing check on {collection_name}")
+            t.error(f'create({c_name}, "one", {"id": "one", "one": 1}) failed, {err}')
+    t.print(f"Testing check on {c_name}")
     # Check our collection
-    if not (dataset.check(collection_name) == True):
+    if not (dataset.check(c_name) == True):
         err = dataset.error_message()
-        t.error("Failed, (before break) expected check True, got False for {collection_name} (err: {err})")
+        t.error("Failed, (before break) expected check True, got False for {c_name} (err: {err})")
         return
 
     # Break and recheck our collection
-    print(f"Removing {collection_name}/collection.json to cause a fail")
-    if os.path.exists(collection_name + "/collection.json"):
-        os.remove(collection_name + "/collection.json")
-    print(f"Testing check on (broken) {collection_name}")
-    if not (dataset.check(collection_name) == False):
+    print(f"Removing {c_name}/collection.json to cause a fail")
+    if os.path.exists(c_name + "/collection.json"):
+        os.remove(c_name + "/collection.json")
+    print(f"Testing check on (broken) {c_name}")
+    if not (dataset.check(c_name) == False):
         err = dataset.error_message()
-        t.error(f"Failed, (after break) expected check False got True for {collection_name} (err: {err})")
+        t.error(f"Failed, (after break) expected check False got True for {c_name} (err: {err})")
     else:
-        t.print(f"Should have see error output for broken {collection_name}")
+        t.print(f"Should have see error output for broken {c_name}")
 
     # Repair our collection
-    t.print("Testing repair on", collection_name)
-    if dataset.repair(collection_name) == False:
+    t.print("Testing repair on", c_name)
+    if dataset.repair(c_name) == False:
         err = dataset.error_message()
         t.error("Failed, expected repair to return True, got, ", err)
-    if os.path.exists(os.path.join(collection_name,  "collection.json")) == False:
-        t.error(f"Failed, expected recreated {collection_name}/collection.json")
+    if os.path.exists(os.path.join(c_name,  "collection.json")) == False:
+        t.error(f"Failed, expected recreated {c_name}/collection.json")
  
         
-def test_attachments(t, collection_name):
+def test_attachments(t, c_name):
     t.print("Testing attach, attachments, detach and prune")
     # Generate two files to attach.
     filenames = ['a1.txt', 'a2.txt']
@@ -267,35 +267,35 @@ def test_attachments(t, collection_name):
         with open(f_name, 'w') as text_file:
             text_file.write(f'This is file {f_name} ({i})' + "\n")
 
-    if dataset.status(collection_name) == False:
-        t.error("Failed,", collection_name, "missing")
+    if dataset.status(c_name) == False:
+        t.error("Failed,", c_name, "missing")
         return
-    keys = dataset.keys(collection_name)
+    keys = dataset.keys(c_name)
     if len(keys) < 1:
-        t.error("Failed,", collection_name, "should have keys")
+        t.error("Failed,", c_name, "should have keys")
         return
 
     print(f'DEBUG len(keys) -> {len(keys)}')
     key = keys[0]
     print(f'DEBUG key -> {key}, attaching {filenames}')
-    if dataset.attach(collection_name, key, filenames) == False:
+    if dataset.attach(c_name, key, filenames) == False:
         err = dataset.error_message()
-        t.error("Failed, to attach files for", collection_name, key, filenames, ', ', err)
+        t.error(f"Failed to attach files for {c_name} -> {key} => {filenames} : {err}")
         return
 
-    l = dataset.attachments(collection_name, key)
+    l = dataset.attachments(c_name, key)
     if len(l) != 2:
-        t.error("Failed, expected two attachments for", collection_name, key, "got", l)
+        t.error(f"Failed, expected two attachments for {c_name} -> {key} got ({len(l)}) {l}")
         return
 
     #Check that attachments should not be impacted by update
-    if dataset.update(collection_name, key, {"key": key, "testing":"update"}) == False:
+    if dataset.update(c_name, key, {"key": key, "testing":"update"}) == False:
         err = dataset.error_message()
-        t.error("Failed, to update record", collection_name, key, err)
+        t.error("Failed, to update record", c_name, key, err)
         return
-    l = dataset.attachments(collection_name, key)
+    l = dataset.attachments(c_name, key)
     if len(l) != 2:
-        t.error("Failed, expected two attachments after update for", collection_name, key, "got", l)
+        t.error("Failed, expected two attachments after update for", c_name, key, "got", l)
         return
 
     if os.path.exists(filenames[0]):
@@ -304,73 +304,73 @@ def test_attachments(t, collection_name):
         os.remove(filenames[1])
 
     # First try detaching one file.
-    if dataset.detach(collection_name, key, [filenames[1]]) == False:
+    if dataset.detach(c_name, key, [filenames[1]]) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for", collection_name, key, filenames[1], ', ', err)
+        t.error("Failed, expected True for", c_name, key, filenames[1], ', ', err)
     if os.path.exists(filenames[1]):
         os.remove(filenames[1])
     else:
-        t.error("Failed to detch", filenames[1], "from", collection_name, key)
+        t.error("Failed to detch", filenames[1], "from", c_name, key)
 
     # Test explicit filenames detch
-    if dataset.detach(collection_name, key, filenames) == False:
+    if dataset.detach(c_name, key, filenames) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for", collection_name, key, filenames, ', ', err)
+        t.error("Failed, expected True for", c_name, key, filenames, ', ', err)
 
     for fname in filenames:
         if os.path.exists(fname):
             os.remove(fname)
         else:
-            t.error("Failed, expected", fname, "to be detached from", collection_name, key)
+            t.error("Failed, expected", fname, "to be detached from", c_name, key)
 
     # Test detaching all files
-    if dataset.detach(collection_name, key, []) == False:
+    if dataset.detach(c_name, key, []) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for (detaching all)", collection_name, key, ', ', err)
+        t.error("Failed, expected True for (detaching all)", c_name, key, ', ', err)
     for fname in filenames:
         if os.path.exists(fname):
             os.remove(fname)
         else:
-            t.error("Failed, expected", fname, "for detaching all from", collection_name, key)
+            t.error("Failed, expected", fname, "for detaching all from", c_name, key)
 
-    if dataset.prune(collection_name, key, [filenames[0]]) == False:
+    if dataset.prune(c_name, key, [filenames[0]]) == False:
         err = dataset.error_messag()
-        t.error("Failed, expected True for prune", collection_name, key, [filenames[0]], ', ', err)
-    l = dataset.attachments(collection_name, key)
+        t.error("Failed, expected True for prune", c_name, key, [filenames[0]], ', ', err)
+    l = dataset.attachments(c_name, key)
     if len(l) != 1:
-        t.error("Failed, expected one file after prune for", collection_name, key, [filenames[0]], "got", l)
+        t.error("Failed, expected one file after prune for", c_name, key, [filenames[0]], "got", l)
 
-    if dataset.prune(collection_name, key, []) == False:
+    if dataset.prune(c_name, key, []) == False:
         err = dataset.error_message()
-        t.error("Failed, expected True for prune (all)", collection_name, key, ', ', err)
-    l = dataset.attachments(collection_name, key)
+        t.error("Failed, expected True for prune (all)", c_name, key, ', ', err)
+    l = dataset.attachments(c_name, key)
     if len(l) != 0:
-        t.error("Failed, expected zero files after prune for", collection_name, key, "got", l)
+        t.error("Failed, expected zero files after prune for", c_name, key, "got", l)
 
     
-def test_join(t, collection_name):
+def test_join(t, c_name):
     key = "test_join1"
     obj1 = { "id": key, "one": 1}
     obj2 = { "id": key, "two": 2}
-    if dataset.status(collection_name) == False:
-        t.error("Failed, collection status is False,", collection_name)
+    if dataset.status(c_name) == False:
+        t.error("Failed, collection status is False,", c_name)
         return
-    ok = dataset.has_key(collection_name, key)
+    ok = dataset.has_key(c_name, key)
     err = ''
     if ok == True:
         ok = dataset.update(collection_nane, key, obj1)
     else:
-        ok = dataset.create(collection_name, key, obj1)
+        ok = dataset.create(c_name, key, obj1)
     if ok == False:
         err = dataset.error_message()
-        t.error(f'Failed, could not add record for test ({collection_name}, {key}, {obj1}), {err}')
+        t.error(f'Failed, could not add record for test ({c_name}, {key}, {obj1}), {err}')
         return
-    if dataset.join(collection_name, key, obj2, overwrite = False) == False:
+    if dataset.join(c_name, key, obj2, overwrite = False) == False:
         err = dataset.error_message()
-        t.error(f'Failed, join for {collection_name}, {key}, {obj2}, overwrite = False -> {err}')
-    obj_result, err = dataset.read(collection_name, key)
+        t.error(f'Failed, join for {c_name}, {key}, {obj2}, overwrite = False -> {err}')
+    obj_result, err = dataset.read(c_name, key)
     if err != '':
-        t.error(f'Unexpected error for {key} in {collection_name}, {err}')
+        t.error(f'Unexpected error for {key} in {c_name}, {err}')
     if obj_result.get('one') != 1:
         t.error(f'Failed to join append key {key}, {obj_result}')
     if obj_result.get("two") != 2:
@@ -378,12 +378,12 @@ def test_join(t, collection_name):
     obj2['one'] = 3
     obj2['two'] = 3
     obj2['three'] = 3
-    if dataset.join(collection_name, key, obj2, overwrite = True) == False:
+    if dataset.join(c_name, key, obj2, overwrite = True) == False:
         err = dataset.error_message()
-        t.error(f'Failed to join overwrite {collection_name}, {key}, {obj2}, overwrite = True -> {err}')
-    obj_result, err = dataset.read(collection_name, key)
+        t.error(f'Failed to join overwrite {c_name}, {key}, {obj2}, overwrite = True -> {err}')
+    obj_result, err = dataset.read(c_name, key)
     if err != '':
-        t.error(f'Unexpected error for {key} in {collection_name}, {err}')
+        t.error(f'Unexpected error for {key} in {c_name}, {err}')
     for k in obj_result:
         if k != '_Key' and obj_result[k] != 3:
             t.error('Failed to update value in join overwrite', k, obj_result)
@@ -392,14 +392,14 @@ def test_join(t, collection_name):
 # test_issue43() When exporting records to a table using
 # use_srict_dotpath(True), the rows are getting miss aligned.
 #
-def test_issue43(t, collection_name, csv_name):
-    if os.path.exists(collection_name):
-        shutil.rmtree(collection_name)
+def test_issue43(t, c_name, csv_name):
+    if os.path.exists(c_name):
+        shutil.rmtree(c_name)
     if os.path.exists(csv_name):
         os.remove(csv_name)
-    if dataset.init(collection_name) == False:
+    if dataset.init(c_name) == False:
         err = dataset.error_message()
-        t.error(f'Failed, need a {collection_name} to run test, {err}')
+        t.error(f'Failed, need a {c_name} to run test, {err}')
         return
     table = {
             "r1": {
@@ -434,23 +434,23 @@ def test_issue43(t, collection_name, csv_name):
     for key in table:
         row = table[key]
         row['key'] = key # Save the key/id along with the row data
-        if dataset.create(collection_name, key, row) == False:
+        if dataset.create(c_name, key, row) == False:
             err = dataset.error_message()
-            t.error(f"Can't add test row {key} to {collection_name}, {err}")
+            t.error(f"Can't add test row {key} to {c_name}, {err}")
             return
 
     dataset.use_strict_dotpath(False)
     # Setup frame
     frame_name = 'f1'
-    keys = dataset.keys(collection_name)
-    if dataset.frame_create(collection_name, frame_name, keys, 
+    keys = dataset.keys(c_name)
+    if dataset.frame_create(c_name, frame_name, keys, 
         [".key",".c1",".c2",".c3",".c4"], ["key", "c1", "c2", "c3", "c4"]) == False:
         err = dataset.error_message()
         t.error(err)
         return
-    if dataset.export_csv(collection_name, frame_name, csv_name) == False:
+    if dataset.export_csv(c_name, frame_name, csv_name) == False:
        err = dataset.error_message()
-       t.error(f'export_csv({collection_name}, {frame_name}, {csv_name} should have emitted warnings, not error, {err}')
+       t.error(f'export_csv({c_name}, {frame_name}, {csv_name} should have emitted warnings, not error, {err}')
        return
     with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
         rows = f.read()
@@ -736,14 +736,14 @@ if __name__ == "__main__":
     ok = True
     dataset.verbose_off()
 
-    collection_name = "test_collection.ds"
+    c_name = "test_collection.ds"
     test_runner = TestRunner(os.path.basename(__file__))
-    test_runner.add(test_setup, [collection_name])
-    test_runner.add(test_basic, [collection_name])
-    test_runner.add(test_keys, [collection_name])
-    test_runner.add(test_issue32, [collection_name])
-    test_runner.add(test_attachments, [collection_name])
-    test_runner.add(test_join, [collection_name])
+    test_runner.add(test_setup, [c_name])
+    test_runner.add(test_basic, [c_name])
+    test_runner.add(test_keys, [c_name])
+    test_runner.add(test_issue32, [c_name])
+    test_runner.add(test_attachments, [c_name])
+    test_runner.add(test_join, [c_name])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     # NOTE: simple cloning requires a DSN for training and test datasets
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "", "test_test.ds", ""])
