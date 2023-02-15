@@ -142,7 +142,7 @@ def test_issue12(t, c_name):
     #dataset.verbose_on() # DEBUG
     #dataset.use_strict_dotpath(True) # DEBUG
     if dataset.status(c_name) == False:
-        if not dataset.init(c_name):
+        if dataset.init(c_name, "") == False:
             err = dataset.error_message()
             t.error(f'failed to create {c_name}')
             return 
@@ -207,9 +207,9 @@ def test_issue32(t, c_name):
 def test_setup(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
-        t.error("init({c_name}) failed, {err}")
+        t.error("init({c_name}, '') failed, {err}")
         return
 
 
@@ -220,9 +220,9 @@ def test_check_repair(t, c_name):
         shutil.rmtree(c_name)
     if dataset.status(c_name) == True:
         dataset.close(c_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
-        t.error(f'init({c_name}) failed, {err}')
+        t.error(f'init({c_name}, "") failed, {err}')
         return
     if dataset.status(c_name) == False:
         t.error(f"Failed, expected dataset.status() == True, got False for {c_name}")
@@ -385,7 +385,7 @@ def test_join(t, c_name):
     if err != '':
         t.error(f'Unexpected error for {key} in {c_name}, {err}')
     for k in obj_result:
-        if k != '_Key' and obj_result[k] != 3:
+        if k != 'id' and obj_result[k] != 3:
             t.error('Failed to update value in join overwrite', k, obj_result)
     
 #
@@ -397,7 +397,7 @@ def test_issue43(t, c_name, csv_name):
         shutil.rmtree(c_name)
     if os.path.exists(csv_name):
         os.remove(csv_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
         t.error(f'Failed, need a {c_name} to run test, {err}')
         return
@@ -474,7 +474,7 @@ def test_clone_sample(t, c_name, sample_size, training_name, training_dsn, test_
 def test_frame(t, c_name):
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
         t.error(err)
         return
@@ -498,7 +498,7 @@ def test_frame(t, c_name):
     if dataset.frame_reframe(c_name, f_name) == False:
         err = dataset.error_message()
         t.error(err)
-    l = dataset.frames(c_name)
+    l = dataset.frame_names(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
     if dataset.delete_frame(c_name, f_name) == False:
@@ -510,7 +510,7 @@ def test_frame_objects(t, c_name):
         dataset.close(c_name)
         if os.path.exists(c_name):
             shutil.rmtree(c_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
         t.error(f'init({c_name}), {err}')
         return
@@ -553,7 +553,7 @@ def test_frame_objects(t, c_name):
     if dataset.frame_refresh(c_name, f_name) == False:
         err = dataset.error_message()
         t.error(f'frame_reframe({c_name}, {f_name}), {err}')
-    l = dataset.frames(c_name)
+    l = dataset.frame_names(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
     object_result = dataset.frame_objects(c_name, f_name)
@@ -588,7 +588,7 @@ def test_sync_csv(t, c_name):
     # Setup test collection
     if os.path.exists(c_name):
         shutil.rmtree(c_name)
-    if dataset.init(c_name) == False:
+    if dataset.init(c_name, "") == False:
         err = dataset.error_message()
         t.error(f'init({c_name}) failed, {err}')
         return
@@ -729,7 +729,7 @@ class TestRunner:
 #
 if __name__ == "__main__":
     print("Starting dataset_test.py")
-    print("Testing dataset version", dataset.version())
+    print("Testing dataset version", dataset.dataset_version())
 
     # Pre-test check
     error_count = 0

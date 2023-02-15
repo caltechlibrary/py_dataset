@@ -201,14 +201,19 @@ extern int create_object(char* cName, char* cKey, char* cSrc);
 
 // read_object takes a key and returns JSON source of the record
 //
-extern char* read_object(char* cName, char* cKey, int cCleanObject);
+extern char* read_object(char* cName, char* cKey);
+
+// read_object_version takes a collection name, key and semver
+// and returns JSON source of the record version.
+//
+extern char* read_object_version(char* cName, char* cKey, char* cSemver);
 
 // THIS IS AN UGLY HACK, Python ctypes doesn't **easily** support
 // undemensioned arrays of strings. So we will assume the array of
 // keys has already been transformed into JSON before calling
 // read_list.
 //
-extern char* read_object_list(char* cName, char* cKeysAsJSON, int cCleanObject);
+extern char* read_object_list(char* cName, char* cKeysAsJSON);
 
 // update_object takes a key and JSON source and replaces the record
 // in the collection.
@@ -258,27 +263,31 @@ extern int update_objects(char* cName, char* keysAsJSON, char* objectsAsJSON);
 //
 extern char* list_objects(char* cName, char* cKeys);
 
-// attach will attach a file to a JSON object in a collection. It takes
-// a semver string (e.g. v0.0.1) and associates that with where it stores
-// the file.  If semver is v0.0.0 it is considered unversioned, if v0.0.1
-// or larger it is considered versioned.
+// attach will attach a file to a JSON object in a collection. If the
+// collection is versioned then the semver will be managed automatically.
 //
-extern int attach(char* cName, char* cKey, char* cSemver, char* cFNames);
+extern int attach(char* cName, char* cKey, char* cFNames);
 
 // attachments returns a list of attachments and their size in
 // associated with a JSON obejct in the collection.
 //
 extern char* attachments(char* cName, char* cKey);
 
-// detach exports the file associated with the semver from the JSON
+// detach exports the file associated with the key and basenames 
+// the JSON object in the collection. The file remains "attached".
+//
+extern int detach(char* cName, char* cKey, char* cFNames);
+
+// detach_version exports the file associated with the semver from the JSON
 // object in the collection. The file remains "attached".
 //
-extern int detach(char* cName, char* cKey, char* cSemver, char* cFNames);
+extern int detach_version(char* cName, char* cKey, char* cSemver, char* cFNames);
 
-// prune removes an attachment by semver from a JSON object in the
-// collection. This is destructive, the file is removed from disc.
+// prune removes an attachment by basename from a JSON object in the
+// collection. This is destructive, the file is removed from disc. 
+// NOTE: If the collection is versioned prune removes ALL versions!!!
 //
-extern int prune(char* cName, char* cKey, char* cSemver, char* cFNames);
+extern int prune(char* cName, char* cKey, char* cFNames);
 
 // frame retrieves a frame including its metadata. NOTE:
 // if you just want the object list, use frame_objects().
@@ -333,9 +342,15 @@ extern char* frame_names(char* cName);
 //
 extern char* frame_grid(char* cName, char* cFName, int cIncludeHeaderRow);
 
-// get_version will rerturn the dataset "version" used to create/manage the collection. If want a version associated with the collection itself see the codemeta.json file in the root folder of the collection.
+// set_versioning sets the versioning on a collection. versioning value
+// can be "", "none",  "patch", /"minor", "major".
 //
-extern char* get_version(char* cName);
+extern int set_versioning(char* cName, char* cVersioning);
+
+// get_versioning will returns the versioning setting (e.g. "", "patch",
+// "minor", "major") on a collection.
+//
+extern char* get_versioning(char* cName);
 
 #ifdef __cplusplus
 }
