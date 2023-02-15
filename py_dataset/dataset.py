@@ -138,7 +138,24 @@ def read(collection_name, key):
             return {}, error_message()
         return json.loads(rval), ''
     return {}, f"Can't read {key} from {collection_name}, {error_message()}"
-    
+  
+
+# object_versions returns a list of versions of a JSON record 
+# in a dataset collection
+def object_versions(collection_name, key):
+    '''read a JSON record from a collection with the given name and record key, returns a dict and an error string'''
+    if not isinstance(key, str) == True:
+        key = f"{key}"
+    value = libdataset.read_object_versions(c_char_p(collection_name.encode('utf8')), c_char_p(key.encode('utf8')))
+    if not isinstance(value, bytes):
+        value = value.encode('utf-8')
+    rval = value.decode()
+    if type(rval) is str:
+        if rval == "":
+            return {}, error_message()
+        return json.loads(rval), ''
+    return {}, f"Can't read {key} from {collection_name}, {error_message()}"
+  
 
 # read_version reads a JSON record from a Dataset collection using
 # key and semver
