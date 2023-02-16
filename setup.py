@@ -53,7 +53,7 @@ download = meta['downloadUrl']
 license = meta['license']
 name = meta['name']
 
-REQUIRES_PYTHON = '>=3.10.0'
+REQUIRES_PYTHON = '>=3.8.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = []
