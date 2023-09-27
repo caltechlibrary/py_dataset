@@ -11,7 +11,7 @@ authors:
 abstract: A command line tool for working with JSON documents on local disc
 repository-code: "https://github.com/caltechlibrary/py_dataset"
 type: software
-version: 1.0.2a0
+version: 2.1.2
 license-url: "https://data.caltech.edu/license"
 keywords:
   - GitHub
@@ -19,4 +19,4 @@ keywords:
   - data
   - software
   - json
-date-released: 2023-02-13
+date-released: 2023-09-27
