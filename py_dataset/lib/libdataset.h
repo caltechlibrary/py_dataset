@@ -171,7 +171,7 @@ extern int clone_sample(char* cName, char* cTrainingName, char* cTrainingDsn, ch
 //
 extern int import_csv(char* cName, char* cCSVFName, int cIDCol, int cUseHeaderRow, int cOverwrite);
 
-// export_csv - export collection objects to a CSV file
+// export_csv - export collection objects as a frame to a CSV file
 // syntax: COLLECTION FRAME CSV_FILENAME
 //
 extern int export_csv(char* cName, char* cFrameName, char* cCSVFName);

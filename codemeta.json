@@ -6,7 +6,8 @@
     "codeRepository": "https://github.com/caltechlibrary/py_dataset",
     "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
     "license": "https://data.caltech.edu/license",
-    "version": "2.1.1",
+	"releaseDate": "2023-09-26",
+    "version": "2.1.2",
     "author": [
         {
             "@type": "Person",
