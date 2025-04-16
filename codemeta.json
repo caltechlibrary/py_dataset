@@ -51,7 +51,8 @@
     }
   ],
   "dateCreated": "2017-06-18",
-  "dateModified": "2025-04-15",
+  "dateModified": "2025-04-16",
+  "datePublished": "2025-04-16",
   "description": "A command line tool for working with JSON documents on local disc",
   "funder": [
     "Caltech Library"
@@ -69,9 +70,9 @@
     "Python3"
   ],
   "softwareRequirements": [
-    "dataset >= 2.2.2"
+    "dataset >= 2.2.3"
   ],
-  "version": "2.2.2",
+  "version": "2.2.3",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/py_dataset/releases",
