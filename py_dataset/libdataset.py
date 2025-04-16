@@ -22,6 +22,7 @@
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # 
+import os
 import json
 import shutil
 import subprocess
@@ -37,20 +38,49 @@ dataset = shutil.which('dataset')
 #
 import subprocess
 
-
+#
+# run_cli runs the dataset cli supported by py_dataset.  It replaces the old
+# calls to the libdataset C shared library.
+#
+# @params command an array of command line 
+# @returns tuple of standard output content and standard error content
 def run_cli(command):
+    #print(f'DEBUG command running ({type(command)}) -> {command}') if command[1] == 'clone-sample' else ''
     try:
         # Run the command and capture the output
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
         # Return a tuple with stdout and stderr
         return (result.stdout, result.stderr)
-
     except FileNotFoundError:
         return (None, f"Executable not found: {' '.join(command)}")
     except Exception as e:
         return (None, f"An error occurred: {e}")
 
+
+#
+# run_cli_read_stdin runs the dataset cli supported by py_dataset but sends input
+# through standard in to the program.  It replaces the old calls to the libdataset C shared library.
+#
+# @params command is an array of command line parameters, data is the content sent through standard input to the cli. 
+# @returns tuple of standard output content and standard error content
+def run_cli_input(command, data):
+    try:
+        # Start the subprocess
+        process = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        # Send input data to the subprocess
+        stdout, stderr = process.communicate(input=data)
+        # Return a tuple with stdout and stderr
+        return (stdout, stderr)
+    except FileNotFoundError:
+        return (None, f"Executable not found: {' '.join(command)}")
+    except Exception as e:
+        return (None, f"An error occurred: {e}")
 
 #
 # Global settings
@@ -73,8 +103,8 @@ verbose = False
 #
 # Return: semver (string)
 def dataset_version():
-    src, err = run_cli([dataset, "--version"):
-    if (err !== ''):
+    src, err = run_cli([dataset, "--version"])
+    if (err != ''):
         errors.append(err)
     return src
     
@@ -133,12 +163,10 @@ def verbose_off():
 # by the dsn (data source name) to store the JSON documents.
 #
 # Args: collection_name (string), dsn (string)
-# Returns: true (1), false (0)
-def init_collection(c_name, dsn):
-    if dsn == None or dsn ===  '':
-        dsn = 'sqlite://collection.db'
-    src, err = run_cli(dataset, c_name, dsn)
-    if err !== '':
+# Returns: True, False
+def init_collection(c_name, dsn = "sqlite://collection.db"):
+    src, err = run_cli([dataset, 'init', c_name, dsn])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -197,8 +225,8 @@ def close_all_collections():
 # Args: collection_name (string), key (string), value (JSON source)
 # Returns: True (1) or False (0)
 def create_object(c_name, key, val):
-    src, err = run_cli(dataset, 'create', c_name, key, value)
-    if err !== '':
+    src, err = run_cli([dataset, 'create', c_name, key, val])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -208,10 +236,10 @@ def create_object(c_name, key, val):
 # Args: collection_name (string), key (string)
 # Returns: value (JSON source)
 def read_object(c_name, key):
-    src, err = run_cli(dataset, 'read', c_name, key)
-    if err !== '':
+    src, err = run_cli([dataset, 'read', c_name, key])
+    if err != '':
         errors.append(err)
-        return None
+        return ''
     return src
 
 # read_object_version retrieves an object from the collection
@@ -220,8 +248,8 @@ def read_object(c_name, key):
 # Args: collection_name (string), key (string), semver (string)
 # Returns: value (JSON source)
 def read_object_version(c_name, key, semver):
-    src, err = run_cli(dataset, 'read-version', c_name, key, semver)
-    if err !== '':
+    src, err = run_cli([dataset, 'read-version', c_name, key, semver])
+    if err != '':
         errors.append(err)
         return None
     return src
@@ -233,8 +261,8 @@ def read_object_version(c_name, key, semver):
 # Args: collection_name (string), key (string), value (JSON source)
 # Returns: value (JSON source)
 def update_object(c_name, key, val):
-    src, err = run_cli(dataset, 'update', c_name, key, val)
-    if err !== '':
+    src, err = run_cli([dataset, 'update', c_name, key, val])
+    if err != '':
         errors.append(err)
         return None
     return src
@@ -248,8 +276,8 @@ def update_object(c_name, key, val):
 # Args: collection_name (string), key (string)
 # Returns: True (1) or False (0)
 def delete_object(c_name, key):
-    src, err = run_cli(dataset, 'delete', c_name, key)
-    if err !== '':
+    src, err = run_cli([dataset, 'delete', c_name, key])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -260,10 +288,11 @@ def delete_object(c_name, key):
 # Args: collection_name(string), key (string)
 # Returns: (bool)
 def has_key(c_name, key):
-    src, err = run_cli(dataset, 'haskey', c_name, key):
-    if err !== '':
+    src, err = run_cli([dataset, 'haskey', c_name, key])
+    if err != '':
         errors.append(err)
         return False
+    src = src.strip()
     if src == "true":
         return True
     elif src == "false":
@@ -275,22 +304,38 @@ def has_key(c_name, key):
 # Args: collection_name (string)
 # Returns: value (JSON source)
 def keys(c_name):
-    src, err = run_cli(dataset, 'keys', c_name)
-    if err !== '':
+    src, err = run_cli([dataset, 'keys', c_name])
+    if err != '':
         errors.append(err)
-        return None
-    return src
+        return []
+    if src == None or src.strip() == '':
+        return []
+    try:
+        result = src.split('\n')
+    except err:
+        errors.append(f'{err}')
+        return []
+    return result
 
 # count_objects() returns the number of objects in a collection.
 #
-# Args: collection_name (string)
+# Args: collection_name (string), filter_expr (string)
+
 # Returns: value (int)
-def count_objects(c_name):
-    src, err = run_cli(dataset, 'count', c_name)
-    if err !== '':
+def count_objects(c_name, filter_expr = ''):
+    if filter_expr != '':
+        src, err = run_cli([dataset, 'count', c_name, filter_expression])
+    else:
+        src, err = run_cli([dataset, 'count', c_name ])
+    if err != '':
         errors.append(err)
         return -1
-    return src
+    # Now I need to turn the numeric output into an integer.
+    try:
+        return int(src)
+    except (err):
+        errors.append(f'"{src}" is not a number, {err}')
+        return -1
 
 # NOTE: import_csv, export_csv, sync_* are all depreciated and
 # aill return False always. RSD 2025-04-15
@@ -306,7 +351,7 @@ def count_objects(c_name):
 #       use header row (bool), overwrite (bool)
 # Returns: True (1), False (0)
 def import_csv(c_name, frame_name, id_column, use_header, overwrite):
-    errors.append('import_csv has been removed.')
+    errors.append('import_csv using frame has been removed.')
     return False
 
 # export_csv - export collection objects to a CSV file using a frame.
@@ -314,17 +359,17 @@ def import_csv(c_name, frame_name, id_column, use_header, overwrite):
 # Args: collection_name (strng), frame_name (string), csv_filename (string)
 # Returns: True (1), False (0)
 def export_csv(c_name, frame_name, csv_filename):
-    errors.append('export_csv has been removed.')
+    errors.append('export_csv from frame has been removed.')
     return False
 
-# sync_receive_csv() retrieves data from a CSV file and updates a 
+# sync_recieve_csv() retrieves data from a CSV file and updates a 
 # collection using a frame to map columns to attributes. Returns 
 # True on success, False if error is encountered.
 #
 # Args: collection_name (string), frame_name (string), 
 #       csv_filename (string), overwrite (bool)
 # Returns: True (1), False (0)
-def sync_receieve_csv(c_name, frame_name, csv_filename, overwrite):
+def sync_recieve_csv(c_name, frame_name, csv_filename, overwrite):
     errors.append('sync_recieve_csv has been removed.')
     return False
     
@@ -347,21 +392,28 @@ def sync_send_csv(c_name, frame_name, csv_filename, overwrite):
 def collection_exists(c_name):
     return has_collection(c_name)
 
+def has_collection(c_name):
+    if os.path.exists(c_name) and os.path.exists(os.path.join(c_name, "collection.json")):
+        return True
+    return False
+
 # list_objects() returns a list of objects for a list of keys as
 # JSON. Returns a JSON list of object as source.
 #
 # Args: collection_name (string), key list (JSON array source)
-# Returns: value (JSON Array of Objects source)
+# Returns: an Array of Objects source
 def list_objects(c_name, keys):
     object_list = []
-    for (key in keys):
-        src, err = run_cli(dataset, 'read', c_name, key)
-        if err !== '':
+    for key in keys:
+        src, err = run_cli([dataset, 'read', c_name, key])
+        if err != '':
             errors.append(err)
             continue
+        if not isinstance(src, bytes):
+            src = src.encode('utf8')
         obj = json.loads(src)
         object_list.append(obj)
-    return json.dumps(object_list)
+    return object_list
 
 # NOTE: This will always return ''. Pairtree support is rarely
 # used anymore and is no longer the default. RSD 2025-04-15
@@ -384,8 +436,8 @@ def object_path(c_name, key):
 # Args: collection_name (string)
 # Returns: True (1), False (0)
 def check_collection(c_name):
-    src, err = run_cli(dataset, 'check', c_name)
-    if err !== '':
+    src, err = run_cli([dataset, 'check', c_name])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -399,8 +451,8 @@ def check_collection(c_name):
 # Args: collection_name (string)
 # Returns: true (1), false (0)
 def repair_collection(c_name):
-    src, err = run_cli(dataset, 'repair', c_name)
-    if err !== '':
+    src, err = run_cli([dataset, 'repair', c_name])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -414,38 +466,48 @@ def repair_collection(c_name):
 # system like Git or Subversion). Returns True on successful attachment
 # and False if errors encountered.
 #
-# Args: collection_name (string), key (string), filenames (string)
+# Args: collection_name (string), key (string), filenames (list of strings)
 # Returns: true (1), false (0)
 def attach(c_name, key, filenames):
-   src, err = run_cli(dataset, 'attach', c_name, key, filenames)
-   if err !== '':
-       errors.append(err)
-       return False
+    for filename in filenames:
+        src, err = run_cli([dataset, 'attach', c_name, key, filename])
+        if err != '':
+            errors.append(err)
+            return False
     return True
 
 # attachments() returns a list the files attached to a JSON object record
 # as a JSON array.
 #
 # Args: collection_name (string), key (string)
-# Return: string (JSON list of basenames)
+# Return: string (list of basenames)
 def attachments(c_name, key):
-    src, err = run_cli(dataset, 'attachments', c_name, key)
-    if err !== '':
+    src, err = run_cli([dataset, 'attachments', c_name, key])
+    if err != '':
         errors.append(err)
-        return ''
-    return src
+        return []
+    if src == None or src.strip() == '':
+        return []
+    return src.split("\n")
 
 # detach() retrieves a file from an JSON object record copying it
 # out using the basename to the current working directory. It returns
 # True if the file is successfully copied out, False if an error is
 # encountered.
 #
-# Args: collection_name (string), key (string), basename (string)
+# Args: collection_name (string), key (string), basenames (string or list of string)
 # Returns: true (1), false (0)
-def detach(c_name, key, basename):
-    src, err = run_cli(dataset, 'detach', c_name, key, basename)
-    if err !== '':
-        errors.append(err)
+def detach(c_name, key, basenames):
+    if isinstance(basenames, list):
+        for basename in basenames:
+            src, err = run_cli([dataset, 'detach',  c_name, key, basename])
+            if err != '':
+                errors.append(err)
+    else:
+        src, err = run_cli([dataset, 'detach', c_name, key, basenames])
+        if err != '':
+            errors.append(err)
+    if len(errors) > 0:
         return False
     return True
 
@@ -456,8 +518,8 @@ def detach(c_name, key, basename):
 # Args: collection_name (string), key (string), semver (string), basename (string)
 # Returns: True (1), False (0)
 def detach_version(c_name, key, semver, basename):
-    src, err = run_cli(dataset, 'detach', c_name, key, semver, basename)
-    if err !== '':
+    src, err = run_cli([dataset, 'detach', c_name, key, semver, basename])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -467,12 +529,19 @@ def detach_version(c_name, key, semver, basename):
 # are using versioning and need to "remove" a file, place a tomb stone
 # file there instead of using prune.
 #
-# Args: collection_name (string), key (string), basename (string)
+# Args: collection_name (string), key (string), basename (string or list of string)
 # Returns: true (1), false (0)
-def prune(c_name, key, basename):
-    src, err = run_cli(dataset, 'prune', c_name, key, basename)
-    if err !== '':
-        errors.append(err)
+def prune(c_name, key, basenames):
+    if isinstance(basenames, list):
+        for basename in basenames:
+            src, err = run_cli([dataset, 'prune',  c_name, key, basename])
+            if err != '':
+                errors.append(err)
+    else:
+        src, err = run_cli([dataset, 'prune', c_name, key, basenames])
+        if err != '':
+            errors.append(err)
+    if len(errors) > 0:
         return False
     return True
 
@@ -482,9 +551,13 @@ def prune(c_name, key, basename):
 #
 # Args: collection_name (string), key (string), value (JSON source), overwrite (1: true, 0: false)
 # Returns: True (1), False (0)
-def join_objects(c_name, key, val, overwrite):
-    src, err = run_cli(dataset, 'join', c_name, key, val, overwrite)
-    if err !== '':
+def join_objects(c_name, key, val, overwrite = False):
+    data = json.dumps(val)
+    if (overwrite):
+        src, err = run_cli([dataset, 'join', '--overwrite', c_name, key, data])
+    else:
+        src, err = run_cli([dataset, 'join', c_name, key, data])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -498,8 +571,8 @@ def join_objects(c_name, key, val, overwrite):
 # Args: collection_name (string), new_collection_name (string), dsn (string)
 # Returns: True (1), False (0)
 def clone_collection(c_name, new_c_name, dsn):
-    src, err = run_cli(dataset, 'clone', c_name, new_c_name, dsn)
-    if err !== '':
+    src, err = run_cli([dataset, 'clone', c_name, new_c_name, dsn])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -509,11 +582,17 @@ def clone_collection(c_name, new_c_name, dsn):
 # will set the storage type for that specific collection. The if the
 # data source names are an empty string then a pairtree store will be used.
 # 
-# Args: collection_name (string), training_collection_name (string), training_dsn (string), test_collection_name (string), test_dsn (string), sample size (int)
-# Returns: True (1), False (0)
-def collection_name(c_name, training_c_name, training_dsn, test_c_name, test_dsn, sample_size):
-    src, err = run_cli(dataset, 'clone-sample', c_name, training_c_name, training_dsn, test_c_name, test_dsn, sample_size)
-    if err !== '':
+# Args: c_name (string), training_c_name (string), training_dsn (string), test_c_name (string),
+#       test_dsn (string), sample size (int)
+# Returns: True if successful or False otherwise
+def clone_sample(c_name, training_c_name, training_dsn, test_c_name, test_dsn, sample_size):
+    cmd = [
+        dataset, 'clone-sample', f'--size={sample_size}', 
+        c_name, training_c_name, training_dsn, test_c_name, test_dsn
+    ]
+    keyList = keys(c_name)
+    src, err = run_cli_input(cmd, '\n'.join(keyList))
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -523,8 +602,8 @@ def collection_name(c_name, training_c_name, training_dsn, test_c_name, test_dsn
 # Args: collection_name (string), frame_name (string)
 # Returns: value (JSON object source)
 def frame(c_name, frame_name):
-    src, err = run_cli(dataset, c_name, 'frame-objects', c_name, frame_name)
-    if err !== '':
+    src, err = run_cli([dataset, c_name, 'frame-objects', c_name, frame_name])
+    if err != '':
         errors.append(err)
         return ''
     return src
@@ -534,21 +613,29 @@ def frame(c_name, frame_name):
 # need to be JSON encoded.
 #
 # Args: collection_name (string), frame_name (string), keys (JSON source), dotpaths (JSON source), labels (JSON source)
-# Returns: value (JSON object source)
-def frame_create(c_name, frame_name, keys, dotpaths, labels):
-    src, err = run_cli(dataset, 'frame', c_name, frame_name, keys, dotpaths, labels)
-    if err !== '':
+# Returns: True on success, False otherwise
+def frame_create(c_name, frame_name, keys, dot_paths, labels):
+    data = '\n'.join(keys)
+    cmd = [dataset, 'frame', c_name, frame_name]
+    for i, item in enumerate(dot_paths):
+        if i < len(labels):
+            cmd.append(f'{item}={labels[i]}')
+        else:
+            label = item.lstrip('.')
+            cmd.append(f'{item}={label}')
+    src, err = run_cli_input(cmd, data)
+    if err != '':
         errors.append(err)
-        return ''
-    return src
+        return False
+    return True
 
 # has_frame() checks to see if a frame name has already been defined.
 #
 # Args: collection_name (string), frame_name (string)
 # Returns: True (1), False (0)
 def has_frame(c_name, frame_name):
-    src, err = run_cli(dataset, 'hasframe', c_name, frame_name)
-    if err !== '':
+    src, err = run_cli([dataset, 'hasframe', c_name, frame_name])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -557,13 +644,13 @@ def has_frame(c_name, frame_name):
 # data frame.
 #
 # Args: collection_name (string), frame_name (string)
-# Returns: value (JSON object source)
+# Returns: returns a list of keys in the frame.
 def frame_keys(c_name, frame_name):
-    src, err = run_cli(dataset, 'frame-keys', c_name, frame_name, keys, dotpaths, labels)
-    if err !== '':
+    src, err = run_cli([dataset, 'frame-keys', c_name, frame_name])
+    if err != '':
         errors.append(err)
         return ''
-    return src
+    return src.split('\n')
 
 # frame_objects() returns a list of objects as JSON currently defined
 # in the data frame. The returned objects are JSON encoded.
@@ -571,11 +658,14 @@ def frame_keys(c_name, frame_name):
 # Args: collection_name (string), frame_name (string)
 # Returns: value (JSON object source)
 def frame_objects(c_name, frame_name):
-    src, err = run_cli(dataset, 'frame-objects', c_name, frame_name, keys, dotpaths, labels)
-    if err !== '':
+    src, err = run_cli([dataset, 'frame-objects', c_name, frame_name])
+    if err != '':
         errors.append(err)
         return ''
-    return src
+    if src == None or src.strip() == '':
+        return []
+    #print(f'DEBUG src -> {src}')
+    return json.loads(src)
     
 
 # frame_names() returns a list of frames defined for the collection
@@ -583,12 +673,14 @@ def frame_objects(c_name, frame_name):
 #
 # Args: collection_name (string)
 # Returns: frame names (JSON Array Source)
-def frame_objects(c_name):
-    src, err = run_cli(dataset, 'frames', c_name)
-    if err !== '':
+def frame_names(c_name):
+    src, err = run_cli([dataset, 'frames', c_name])
+    if err != '':
         errors.append(err)
         return ''
-    return src
+    if src == None or src.strip() == '':
+        return []
+    return src.split("\n")
 
 # frame_refresh() updates the objects in a data frame based on
 # the current state of the collection. Any objects removed from
@@ -597,8 +689,8 @@ def frame_objects(c_name):
 # Args: collection_name (string), frame_name (string)
 # Returns: value (JSON object source)
 def frame_refresh(c_name, frame_name):
-    src, err = run_cli(dataset, 'refresh', c_name, frame_name)
-    if err !== '':
+    src, err = run_cli([dataset, 'refresh', c_name, frame_name])
+    if err != '':
         errors.append(err)
         return ''
     return src
@@ -606,23 +698,23 @@ def frame_refresh(c_name, frame_name):
 # frame_reframe() replaces the object list in a data frame. Objects
 # not in the new list of keys will be removed from the frame.
 #
-# Args: collection_name (string), frame_name (string), keys (JSON source)
-# Returns: value (JSON object source)
-def frame_refresh(c_name, frame_name, keys):
-    src, err = run_cli(dataset, 'reframe', c_name, frame_name, keys)
-    if err !== '':
+# Args: collection_name (string), frame_name (string), keys (list of strings)
+# Returns: True on success, False otherwise
+def frame_reframe(c_name, frame_name, keys):
+    src, err = run_cli_input([dataset, 'reframe', c_name, frame_name], '\n'.join(keys))
+    if err != '':
         errors.append(err)
-        return ''
-    return src
+        return False
+    return True
 
 # frame_delete() removes a frame from a collection. Returns True
 # if delete is successful, False if there were errors.
 #
 # Args: collection_name (string), frame_name (string)
-# Returns: True (1), False (0)
-def frame_refresh(c_name, frame_name, keys):
-    src, err = run_cli(dataset, 'delete-frame', c_name, frame_name)
-    if err !== '':
+# Returns: True , False
+def frame_delete(c_name, frame_name):
+    src, err = run_cli([dataset, 'delete-frame', c_name, frame_name])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -633,8 +725,8 @@ def frame_refresh(c_name, frame_name, keys):
 # Args: collection_name (string), frame_name (string)
 # Returns: True (1), False (0)
 def frame_clear(c_name, frame_name):
-    src, err = run_cli(dataset, 'reframe', c_name, frame_name, [])
-    if err !== '':
+    src, err = run_cli([dataset, 'reframe', c_name, frame_name, []])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -686,8 +778,8 @@ def update_objects(c_name, keys_as_json, objects_as_json):
 # Args: collection_name (string), versioning_setting (string)
 # Returns: True (1), False 0)
 def set_versioning(c_name, versioning_setting):
-    src, err = run_cli(dataset, 'set-versioning', c_name, versioning_setting)
-    if err !== '':
+    src, err = run_cli([dataset, 'set-versioning', c_name, versioning_setting])
+    if err != '':
         errors.append(err)
         return False
     return True
@@ -700,8 +792,8 @@ def set_versioning(c_name, versioning_setting):
 # Args: collection_name (string)
 # Returns: value (string)
 def get_versioning(c_name):
-    src, err = run_cli(dataset, 'get-versioning', c_name)
-    if err !== '':
+    src, err = run_cli([dataset, 'get-versioning', c_name])
+    if err != '':
         errors.append(err)
         return ''
     return src

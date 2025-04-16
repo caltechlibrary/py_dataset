@@ -69,20 +69,20 @@ def test_basic(t, c_name):
            else:
                t.error("Failed, expected {k} with a list for v, got {v}")
     
-    # Test path to record
-    cwd = f"{Path('.').resolve()}"
-    expected_s = "/".join([cwd, c_name, "pairtree", "24", "88", (key+".json")])
-    expected_l = len(expected_s)
-    p = dataset.path(c_name, key)
-    if len(p) != expected_l:
-        t.error("Failed, expected length", expected_l, "got", len(p))
-    if p != expected_s:
-        t.error("Failed, expected", expected_s, "got", p)
+    # Test path to record (this is deprecated, remove test. RSD 2025-04-16)
+    # cwd = f"{Path('.').resolve()}"
+    # expected_s = "/".join([cwd, c_name, "pairtree", "24", "88", (key+".json")])
+    # expected_l = len(expected_s)
+    # p = dataset.path(c_name, key)
+    # if len(p) != expected_l:
+    #     t.error("Failed, expected string length", expected_l, "got", len(p))
+    # if p != expected_s:
+    #     t.error("Failed, expected", expected_s, "got", p)
 
     # Test listing records
     l = dataset.list(c_name, [key])
     if len(l) != 1:
-        t.error(f"list({c_name}, [{key}]) failed, list should return an array of one record, got", l)
+        t.error(f"list({c_name}, [{key}]) failed, list should return an array of one record, got list", l)
         return
 
     # test deleting a record
@@ -139,8 +139,6 @@ def test_issue12(t, c_name):
 {"id": "4", "c1": 1, "c2": 1, "c3": 1 },
 {"id": "5", "c1": 6, "c2": 6, "c3": 6 }
 ]'''
-    #dataset.verbose_on() # DEBUG
-    #dataset.use_strict_dotpath(True) # DEBUG
     if dataset.status(c_name) == False:
         if dataset.init(c_name, "") == False:
             err = dataset.error_message()
@@ -211,6 +209,11 @@ def test_setup(t, c_name):
         err = dataset.error_message()
         t.error("init({c_name}, '') failed, {err}")
         return
+    if not os.path.exists(c_name):
+        t.error('Failed to create directory for collection, init failed silently.')
+    if not os.path.exists(os.path.join(c_name, 'collection.json')):
+        t.error('Failed to create collection.json, init failed silently.')
+    return
 
 
 def test_check_repair(t, c_name):
@@ -275,9 +278,7 @@ def test_attachments(t, c_name):
         t.error("Failed,", c_name, "should have keys")
         return
 
-    print(f'DEBUG len(keys) -> {len(keys)}')
     key = keys[0]
-    print(f'DEBUG key -> {key}, attaching {filenames}')
     if dataset.attach(c_name, key, filenames) == False:
         err = dataset.error_message()
         t.error(f"Failed to attach files for {c_name} -> {key} => {filenames} : {err}")
@@ -287,7 +288,6 @@ def test_attachments(t, c_name):
     if len(l) != 2:
         t.error(f"Failed, expected two attachments for {c_name} -> {key} got ({len(l)}) {l}")
         return
-
     #Check that attachments should not be impacted by update
     if dataset.update(c_name, key, {"key": key, "testing":"update"}) == False:
         err = dataset.error_message()
@@ -297,26 +297,21 @@ def test_attachments(t, c_name):
     if len(l) != 2:
         t.error("Failed, expected two attachments after update for", c_name, key, "got", l)
         return
-
     if os.path.exists(filenames[0]):
         os.remove(filenames[0])
     if os.path.exists(filenames[1]):
         os.remove(filenames[1])
-
     # First try detaching one file.
-    if dataset.detach(c_name, key, [filenames[1]]) == False:
+    if not dataset.detach(c_name, key, filenames[1]):
         err = dataset.error_message()
-        t.error("Failed, expected True for", c_name, key, filenames[1], ', ', err)
+        t.error(f"Failed, expected True for detching {c_name}.{key} -> {filenames[1]}, {err}")
     if os.path.exists(filenames[1]):
         os.remove(filenames[1])
     else:
         t.error("Failed to detch", filenames[1], "from", c_name, key)
-
-    # Test explicit filenames detch
-    if dataset.detach(c_name, key, filenames) == False:
+    if not dataset.detach(c_name, key, filenames):
         err = dataset.error_message()
         t.error("Failed, expected True for", c_name, key, filenames, ', ', err)
-
     for fname in filenames:
         if os.path.exists(fname):
             os.remove(fname)
@@ -333,14 +328,14 @@ def test_attachments(t, c_name):
         else:
             t.error("Failed, expected", fname, "for detaching all from", c_name, key)
 
-    if dataset.prune(c_name, key, [filenames[0]]) == False:
+    if not dataset.prune(c_name, key, [filenames[0]]):
         err = dataset.error_messag()
         t.error("Failed, expected True for prune", c_name, key, [filenames[0]], ', ', err)
     l = dataset.attachments(c_name, key)
     if len(l) != 1:
         t.error("Failed, expected one file after prune for", c_name, key, [filenames[0]], "got", l)
 
-    if dataset.prune(c_name, key, []) == False:
+    if not dataset.prune(c_name, key, []):
         err = dataset.error_message()
         t.error("Failed, expected True for prune (all)", c_name, key, ', ', err)
     l = dataset.attachments(c_name, key)
@@ -365,7 +360,7 @@ def test_join(t, c_name):
         err = dataset.error_message()
         t.error(f'Failed, could not add record for test ({c_name}, {key}, {obj1}), {err}')
         return
-    if dataset.join(c_name, key, obj2, overwrite = False) == False:
+    if not dataset.join(c_name, key, obj2, overwrite = False):
         err = dataset.error_message()
         t.error(f'Failed, join for {c_name}, {key}, {obj2}, overwrite = False -> {err}')
     obj_result, err = dataset.read(c_name, key)
@@ -378,7 +373,7 @@ def test_join(t, c_name):
     obj2['one'] = 3
     obj2['two'] = 3
     obj2['three'] = 3
-    if dataset.join(c_name, key, obj2, overwrite = True) == False:
+    if not dataset.join(c_name, key, obj2, overwrite = True):
         err = dataset.error_message()
         t.error(f'Failed to join overwrite {c_name}, {key}, {obj2}, overwrite = True -> {err}')
     obj_result, err = dataset.read(c_name, key)
@@ -441,25 +436,30 @@ def test_issue43(t, c_name, csv_name):
 
     dataset.use_strict_dotpath(False)
     # Setup frame
+    dataset.error_clear()
     frame_name = 'f1'
     keys = dataset.keys(c_name)
-    if dataset.frame_create(c_name, frame_name, keys, 
-        [".key",".c1",".c2",".c3",".c4"], ["key", "c1", "c2", "c3", "c4"]) == False:
+    if not dataset.frame_create(c_name, frame_name, keys, 
+        [".key",".c1",".c2",".c3",".c4"], ["key", "c1", "c2", "c3", "c4"]):
         err = dataset.error_message()
-        t.error(err)
+        t.error(f'failed, dataset frame {c_name} {frame_name} ..., {err}')
         return
-    if dataset.export_csv(c_name, frame_name, csv_name) == False:
-       err = dataset.error_message()
-       t.error(f'export_csv({c_name}, {frame_name}, {csv_name} should have emitted warnings, not error, {err}')
-       return
-    with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
-        rows = f.read()
-
-    for row in rows.split('\n'):
-        if len(row) > 0:
-            cells = row.split(',')
-            if len(cells) < 5:
-                t.error(f'row error {csv_name} for {cells}')
+    #
+    # frame export and import via csv is deprecaited and not longer supported. RSD 2025-04-16
+    #
+    # print(f'DEBUG exporting frame as csv {csv_name}')
+    # if not dataset.export_csv(c_name, frame_name, csv_name):
+    #    err = dataset.error_message()
+    #    t.error(f'export_csv({c_name}, {frame_name}, {csv_name} should have emitted warnings, not error, {err}')
+    #    return
+    # print(f'DEBUG make sure {csv_name} is a valid csv file')
+    # with open(csv_name, mode = 'r', encoding = 'utf-8') as f:
+    #     rows = f.read()
+    # for row in rows.split('\n'):
+    #     if len(row) > 0:
+    #         cells = row.split(',')
+    #         if len(cells) < 5:
+    #             t.error(f'row error {csv_name} for {cells}')
 
 
 def test_clone_sample(t, c_name, sample_size, training_name, training_dsn, test_name, test_dsn):
@@ -467,9 +467,9 @@ def test_clone_sample(t, c_name, sample_size, training_name, training_dsn, test_
         shutil.rmtree(training_name)
     if os.path.exists(test_name):
         shutil.rmtree(test_name)
-    if dataset.clone_sample(c_name, training_name, training_dsn, test_name, test_dsn, sample_size) == False:
+    if not dataset.clone_sample(c_name, training_name, training_dsn, test_name, test_dsn, sample_size):
         err = dataset.error_message()
-        t.error(f"can't clone sample {c_name} size {sample_size} into {training_name}, {test_name} error {err}")
+        t.error(f"can't clone sample {c_name} (size {sample_size}) into {training_name} and {test_name}. {err}")
 
 def test_frame(t, c_name):
     if os.path.exists(c_name):
@@ -492,18 +492,19 @@ def test_frame(t, c_name):
         keys.append(key)
         dataset.create(c_name, key, row)
     f_name = 'f1'
-    if dataset.frame_create(c_name, f_name, keys, dot_paths, labels) == False:
+    if not dataset.frame_create(c_name, f_name, keys, dot_paths, labels):
         err = dataset.error_message()
-        t.error(err)
-    if dataset.frame_reframe(c_name, f_name) == False:
+        t.error(f'''failed to create {c_name} frame {f_name}, {err}''')
+    if not dataset.frame_reframe(c_name, f_name):
         err = dataset.error_message()
-        t.error(err)
+        t.error(f'''failed to reframe {c_name} frame {f_name}, {err}''')
     l = dataset.frame_names(c_name)
     if len(l) != 1 or l[0] != 'f1':
         t.error(f"expected one frame name, f1, got {l}")
     if dataset.delete_frame(c_name, f_name) == False:
         err = dataset.error_message()
-        t.error(f'delete_frame({c_name}, {f_name}), {err}')
+        t.error(f'failed to delete_frame({c_name}, {f_name}), {err}')
+
 
 def test_frame_objects(t, c_name):
     if dataset.status(c_name) == True:
@@ -563,99 +564,103 @@ def test_frame_objects(t, c_name):
     count_nameIdObj = 0
     for obj in object_result:
         if 'id' not in obj:
-            t.error('Did not get id in object')
+            t.error(f'{c_name} frame {f_name}, did not get an "id" attribure in object -> {obj}')
+        #print(f'DEBUG frame-objects {c_name} {f_name} obj -> {json.dumps(obj,sort_keys=True, indent=2)}')
         if 'nameIdentifiers' in obj:
             count_nameId += 1
             for idv in obj['nameIdentifiers']:
                 if 'nameIdentifier' not in idv:
-                    t.error('Missing part of object')
+                    t.error(f'Missing part of object, {obj}')
         if 'nameIdentifier' in obj:
             count_nameIdObj += 1
             if "0000-000X-XXXX-XXXX" not in obj['nameIdentifier']:
-                t.error('Missing object in complex dot path')
+                t.error(f'Missing object in complex dot path {obj}')
     if count_nameId != 2:
-        t.error(f"Incorrect number of nameIdentifiers elements, expected 2, got {count_nameId}")
+        t.error(f"c_name {c_name} frame {f_name}, Incorrect number of nameIdentifiers elements, expected 2, got {count_nameId}")
+        return
     if count_nameIdObj != 2:
         t.error(f"Incorrect number of nameIdentifier elements, expected 2, got {count_nameIdObj}")
+        return
     if dataset.delete_frame(c_name, f_name) == False:
         err = dataset.error_message()
         t.error(f'delete_frame({c_name}, {f_name}), {err}')
 
+# NOTE: sync_*_csv has be deprecated. It is now removed. RSD 2025-04-16
 #
 # test_sync_csv (issue 80) - add tests for sync_send_csv, sync_recieve_csv
 #
-def test_sync_csv(t, c_name):
-    # Setup test collection
-    if os.path.exists(c_name):
-        shutil.rmtree(c_name)
-    if dataset.init(c_name, "") == False:
-        err = dataset.error_message()
-        t.error(f'init({c_name}) failed, {err}')
-        return
+# def test_sync_csv(t, c_name):
+#     # Setup test collection
+#     if os.path.exists(c_name):
+#         shutil.rmtree(c_name)
+#     if dataset.init(c_name, "") == False:
+#         err = dataset.error_message()
+#         t.error(f'init({c_name}) failed, {err}')
+#         return
 
-    # Setup test CSV instance
-    t_data = [
-            { "key": "one", "value": 1 },
-            { "key": "two", "value": 2 },
-            { "key": "three", "value": 3  }
-    ]
-    csv_name = c_name.strip(".ds") + ".csv"
-    if os.path.exists(csv_name):
-        os.remove(csv_name)
-    with open(csv_name, 'w') as csvfile:
-        csv_writer = csv.DictWriter(csvfile, fieldnames = ["key", "value" ])
-        csv_writer.writeheader()
-        for obj in t_data:
-            csv_writer.writerow(obj)
+#     # Setup test CSV instance
+#     t_data = [
+#             { "key": "one", "value": 1 },
+#             { "key": "two", "value": 2 },
+#             { "key": "three", "value": 3  }
+#     ]
+#     csv_name = c_name.strip(".ds") + ".csv"
+#     if os.path.exists(csv_name):
+#         os.remove(csv_name)
+#     with open(csv_name, 'w') as csvfile:
+#         csv_writer = csv.DictWriter(csvfile, fieldnames = ["key", "value" ])
+#         csv_writer.writeheader()
+#         for obj in t_data:
+#             csv_writer.writerow(obj)
         
-    # Import CSV into collection
-    if dataset.import_csv(c_name, csv_name, True) == False:
-        err = dataset.error_message()
-        t.error(f'import_csv({c_name}, {csv_name}, True) failed, {err}')
-        return
-    for key in [ "one", "two", "three" ]:
-        if dataset.has_key(c_name, key) == False:
-            t.error(f"expected has_key({key}) == True, got False")
-    if dataset.has_key(c_name, "five") == True:
-        t.error(f"expected has_key('five') == False, got True")
-    if dataset.create(c_name, "five", {"key": "five", "value": 5}) == False:
-        err = dataset.error_message()
-        t.error(f'create({c_name}, "five", {"value": 5}) failed, {err}')
-        return
+#     # Import CSV into collection
+#     if dataset.import_csv(c_name, csv_name, True) == False:
+#         err = dataset.error_message()
+#         t.error(f'import_csv({c_name}, {csv_name}, True) failed, {err}')
+#         return
+#     for key in [ "one", "two", "three" ]:
+#         if dataset.has_key(c_name, key) == False:
+#             t.error(f"expected has_key({key}) == True, got False")
+#     if dataset.has_key(c_name, "five") == True:
+#         t.error(f"expected has_key('five') == False, got True")
+#     if dataset.create(c_name, "five", {"key": "five", "value": 5}) == False:
+#         err = dataset.error_message()
+#         t.error(f'create({c_name}, "five", {"value": 5}) failed, {err}')
+#         return
 
-    # Setup frame
-    frame_name = 'test_sync'
-    keys = dataset.keys(c_name)
-    if dataset.frame_create(c_name, frame_name, keys, [".key", ".value"], ["key", "value"] ) == False:
-        err = dataset.error_message()
-        t.error(f'frame_create({c_name}, {frame_name}, ...) failed, {err}')
-        return
+#     # Setup frame
+#     frame_name = 'test_sync'
+#     keys = dataset.keys(c_name)
+#     if dataset.frame_create(c_name, frame_name, keys, [".key", ".value"], ["key", "value"] ) == False:
+#         err = dataset.error_message()
+#         t.error(f'frame_create({c_name}, {frame_name}, ...) failed, {err}')
+#         return
 
-    #NOTE: Tests for sync_send_csv and sync_receive_csv
-    if dataset.sync_send_csv(c_name, frame_name, csv_name) == False:
-        err = dataset.error_message()
-        t.error(f'sync_send_csv({c_name}, {frame_name}, {csv_name}) failed, {err}')
-        return
-    with open(csv_name) as fp:
-        src = fp.read()
-        if 'five' not in src:
-            t.error(f"expected 'five' in src, got {src}")
+#     #NOTE: Tests for sync_send_csv and sync_receive_csv
+#     if dataset.sync_send_csv(c_name, frame_name, csv_name) == False:
+#         err = dataset.error_message()
+#         t.error(f'sync_send_csv({c_name}, {frame_name}, {csv_name}) failed, {err}')
+#         return
+#     with open(csv_name) as fp:
+#         src = fp.read()
+#         if 'five' not in src:
+#             t.error(f"expected 'five' in src, got {src}")
 
-    # Now remove "five" from collection
-    if dataset.delete(c_name, "five") == False:
-        err = dataset.error_message()
-        t.error(f'delete({c_name}, "five") failed, {err}')
-        return
-    if dataset.has_key(c_name, "five") == True:
-        t.error(f"expected has_key(five) == False, got True")
-        return
-    if dataset.sync_recieve_csv(c_name, frame_name, csv_name, False) == False:
-        err = dataset.error_message()
-        t.error(f'sync_receive_csv({c_name}, {frame_name}, {csv_name}) failed, {err}')
-        return
-    if dataset.has_key(c_name, "five") == False:
-        t.error(f"expected has_key(five) == True, got False")
-        return
+#     # Now remove "five" from collection
+#     if dataset.delete(c_name, "five") == False:
+#         err = dataset.error_message()
+#         t.error(f'delete({c_name}, "five") failed, {err}')
+#         return
+#     if dataset.has_key(c_name, "five") == True:
+#         t.error(f"expected has_key(five) == False, got True")
+#         return
+#     if dataset.sync_recieve_csv(c_name, frame_name, csv_name, False) == False:
+#         err = dataset.error_message()
+#         t.error(f'sync_receive_csv({c_name}, {frame_name}, {csv_name}) failed, {err}')
+#         return
+#     if dataset.has_key(c_name, "five") == False:
+#         t.error(f"expected has_key(five) == True, got False")
+#         return
 
 
 #
@@ -730,6 +735,8 @@ class TestRunner:
 if __name__ == "__main__":
     print("Starting dataset_test.py")
     print("Testing dataset version", dataset.dataset_version())
+    if not os.path.exists('testout'):
+        os.mkdir('testout')
 
     # Pre-test check
     error_count = 0
@@ -746,11 +753,11 @@ if __name__ == "__main__":
     test_runner.add(test_join, [c_name])
     test_runner.add(test_issue43,["test_issue43.ds", "test_issue43.csv"])
     # NOTE: simple cloning requires a DSN for training and test datasets
-    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "", "test_test.ds", ""])
     test_runner.add(test_frame, ["test_frame.ds"])
     test_runner.add(test_frame_objects, ["test_frame.ds"])
-    test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
+    #test_runner.add(test_sync_csv, ["test_sync_csv.ds"])
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
+    test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "", "test_test.ds", ""])
     test_runner.add(test_issue12, ['test_issue12.ds'])
 
     test_runner.run()
