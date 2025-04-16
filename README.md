@@ -2,12 +2,8 @@
 # py_dataset   [![DOI](https://data.caltech.edu/badge/175684474.svg)](https://data.caltech.edu/badge/latestdoi/175684474)
 
 py_dataset is a Python wrapper for the [dataset](https://github.com/caltechlibrary/dataset) 
-libdataset a C shared library for working with 
-[JSON](https://en.wikipedia.org/wiki/JSON) objects as collections. 
-Collections can be stored on disc or in Cloud Storage.  JSON objects 
-are stored in collections using a pairtree as plain UTF-8 text files.
-This means the objects can be accessed with common 
-Unix text processing tools as well as most programming languages.
+command line implementation. It replaces the depreciated libdataset a C shared library starting
+with the dataset 2.2.x release.
 
 This package wraps all [dataset](docs/) operations such 
 as initialization of collections, creation, 

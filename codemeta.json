@@ -1,72 +1,81 @@
 {
-    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-    "@type": "SoftwareSourceCode",
-    "description": "A command line tool for working with JSON documents on local disc",
-    "name": "py_dataset",
-    "codeRepository": "https://github.com/caltechlibrary/py_dataset",
-    "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
-    "license": "https://data.caltech.edu/license",
-	"releaseDate": "2023-09-26",
-    "version": "2.1.2",
-    "author": [
-        {
-            "@type": "Person",
-            "givenName": "Robert",
-            "familyName": "Doiel",
-      		"affiliation": {
-        		"@type": "Organization",
-        		"name": "Caltech Library"
-      		},
-            "email": "rsdoiel@caltech.edu",
-            "@id": "https://orcid.org/0000-0003-0900-6903"
-        },
-        {
-            "@type": "Person",
-            "givenName": "Thomas E",
-            "familyName": "Morrell",
-      		"affiliation": {
-        		"@type": "Organization",
-        		"name": "Caltech Library"
-      		},
-            "email": "tmorrell@caltech.edu",
-            "@id": "https://orcid.org/0000-0001-9266-5146"
-        }
-    ],
-    "developmentStatus": "active",
-    "downloadUrl": "https://github.com/caltechlibrary/py_dataset/releases",
-    "keywords": [
-        "GitHub",
-        "metadata",
-        "data",
-        "software",
-        "json"
-    ],
-    "maintainer": [
-        {   
-            "@type": "Person",
-            "givenName": "R. S.",
-            "familyName": "Doiel",
-            "affiliation": {
-                "@type": "Organization",
-                "name": "Caltech Library"
-            },  
-            "email": "rsdoiel@caltech.edu",
-            "@id": "https://orcid.org/0000-0003-0900-6903"
-        },  
-        {   
-            "@type": "Person",
-            "givenName": "Thomas E",
-            "familyName": "Morrell",
-            "affiliation": {
-                "@type": "Organization",
-                "name": "Caltech Library"
-            },  
-            "email": "tmorrell@caltech.edu",
-            "@id": "https://orcid.org/0000-0001-9266-5146"
-        }   
-    ],
-    "programmingLanguage": [
-        "Go",
-        "Python"
-    ]
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "type": "SoftwareSourceCode",
+  "codeRepository": "https://github.com/caltechlibrary/py_dataset",
+  "author": [
+    {
+      "id": "https://orcid.org/0000-0003-0900-6903",
+      "type": "Person",
+      "givenName": "Robert",
+      "familyName": "Doiel",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Caltech Library"
+      },
+      "email": "rsdoiel@caltech.edu"
+    },
+    {
+      "id": "https://orcid.org/0000-0001-9266-5146",
+      "type": "Person",
+      "givenName": "Thomas E",
+      "familyName": "Morrell",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Caltech Library"
+      },
+      "email": "tmorrell@caltech.edu"
+    }
+  ],
+  "maintainer": [
+    {
+      "id": "https://orcid.org/0000-0003-0900-6903",
+      "type": "Person",
+      "givenName": "R. S.",
+      "familyName": "Doiel",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Caltech Library"
+      },
+      "email": "rsdoiel@caltech.edu"
+    },
+    {
+      "id": "https://orcid.org/0000-0001-9266-5146",
+      "type": "Person",
+      "givenName": "Thomas E",
+      "familyName": "Morrell",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Caltech Library"
+      },
+      "email": "tmorrell@caltech.edu"
+    }
+  ],
+  "dateCreated": "2017-06-18",
+  "dateModified": "2025-04-15",
+  "description": "A command line tool for working with JSON documents on local disc",
+  "funder": [
+    "Caltech Library"
+  ],
+  "keywords": [
+    "GitHub",
+    "metadata",
+    "data",
+    "software",
+    "json"
+  ],
+  "name": "py_dataset",
+  "license": "https://github.com/caltechlibrary/py_dataset/blob/main/LICENSE",
+  "programmingLanguage": [
+    "Python3"
+  ],
+  "softwareRequirements": [
+    "dataset >= 2.2.2"
+  ],
+  "version": "2.2.2",
+  "developmentStatus": "active",
+  "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
+  "downloadUrl": "https://github.com/caltechlibrary/py_dataset/releases",
+  "releaseNotes": "This release of py_dataset drops the support for the old C shared libraries available before v2.2.0. It implements a wrapper around the dataset command to perform a similar function.",
+  "copyrightYear": 2025,
+  "copyrightHolder": "California Institute of Technology"
 }
