@@ -53,7 +53,7 @@ download = meta['downloadUrl']
 license = meta['license']
 name = meta['name']
 
-REQUIRES_PYTHON = '>=3.8.1'
+REQUIRES_PYTHON = '>=3.10'
 
 # What packages are required for this module to be executed?
 REQUIRED = []
@@ -76,23 +76,24 @@ try:
 except FileNotFoundError:
     long_description = description
 
+# Removed libdatadet setup. RDS 2025-04-17
 # Setup for our Go based shared library as a "data_file" since Python doesn't grok Go.
-if sys.platform.startswith('win'):
-    shared_library_name = "py_dataset/lib/libdataset-amd64.dll"
-    OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
-if sys.platform.startswith('linux'):
-    shared_library_name = "py_dataset/lib/libdataset-amd64.so"
-    OS_Classifier = "Operating System :: POSIX :: Linux"
-if sys.platform.startswith("darwin"):
-    if platform.processor() == 'arm':
-        shared_library_name = "py_dataset/lib/libdataset-arm64.dylib"
-    else:
-        shared_library_name = "py_dataset/lib/libdataset-amd64.dylib"
-    OS_Classifier = "Operating System :: MacOS :: MacOS X"
+# if sys.platform.startswith('win'):
+#     shared_library_name = "py_dataset/lib/libdataset-amd64.dll"
+#     OS_Classifier = "Operating System :: Microsoft :: Windows :: Windows 10"
+# if sys.platform.startswith('linux'):
+#     shared_library_name = "py_dataset/lib/libdataset-amd64.so"
+#     OS_Classifier = "Operating System :: POSIX :: Linux"
+# if sys.platform.startswith("darwin"):
+#     if platform.processor() == 'arm':
+#         shared_library_name = "py_dataset/lib/libdataset-arm64.dylib"
+#     else:
+#         shared_library_name = "py_dataset/lib/libdataset-amd64.dylib"
+#     OS_Classifier = "Operating System :: MacOS :: MacOS X"
         
-if os.path.exists(os.path.join(shared_library_name)) == False:
-    print("Missing compiled shared library " + shared_library_name )
-    sys.exit(1)
+# if os.path.exists(os.path.join(shared_library_name)) == False:
+#     print("Missing compiled shared library " + shared_library_name )
+#     sys.exit(1)
 
 class UploadCommand(Command):
     """Support setup.py upload."""
@@ -141,7 +142,7 @@ setup(name = name,
     download_url = download,
     license = license,
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests", "*_test.py"]),
-    package_data={name:['lib/libdataset-amd64.dll','lib/libdataset-amd64.so','lib/libdataset.h','lib/libdataset-amd64.dylib','lib/libdataset-arm64.dylib']},
+    package_data={name:[]},
     keywords = keywords,
     classifiers = [
         "Development Status :: 4 - Beta",
