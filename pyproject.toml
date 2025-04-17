@@ -1,6 +1,6 @@
 [project]
 name = "py-dataset"
-version = "2.2.2"
+version = "2.2.3.2"
 description = "py_dataset provides a wrapper for the Dataset Project command line tools."
 readme = "README.md"
 requires-python = ">=3.10"
