@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h2 id="basics">Basics</h2>
+<p><code>py_dataset</code> is the python version of <a
+href="https://caltechlibrary.github.io/dataset">dataset</a>. dataset is
+a way of storing and organazing JSON documents on disc. To use
+<code>py_dataset</code> we usually import it using Python’s “from”
+syntax.</p>
+<h2 id="a-preamble-to-dataset-usage">A preamble to dataset usage</h2>
+<pre><code>    from py_dataset import dataset</code></pre>
+<p>This provides a <code>dataset</code> object to work with dataset
+collections.</p>
+<h2 id="an-example">An example</h2>
+<p>This is an example of creating a dataset called <em>fiends.ds</em>,
+saving a record called “littlefreda.json” and reading it back.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> sys</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">import</span> json</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Creating our friends.ds dataset collection for the first time.</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    c_name <span class="op">=</span> <span class="st">&#39;friends.ds&#39;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.init(c_name, dsn <span class="op">=</span> <span class="st">&quot;&quot;</span>):</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(dataset.error_message())</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        sys.exit(<span class="dv">1</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s add something to our collection.</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    key <span class="op">=</span> <span class="st">&#39;littlefreda&#39;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    record <span class="op">=</span> {<span class="st">&quot;name&quot;</span>:<span class="st">&quot;Freda&quot;</span>,<span class="st">&quot;email&quot;</span>:<span class="st">&quot;little.freda@inverness.example.org&quot;</span>}</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.create(c_name, key, record):</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(dataset.error_message())</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        sys.exit(<span class="dv">1</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We should have at least one record in our collection.</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This is the idiom for iterating and working with our collection</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># objects.</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(c_name)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> key <span class="kw">in</span> keys:</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        p <span class="op">=</span> dataset.path(c_name, key)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(p)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># </span><span class="al">NOTE</span><span class="co">: the &quot;read&quot; method returns a touple!</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        record, err <span class="op">:=</span> dataset.read(c_name, key)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="ss">f&quot;read error, </span><span class="sc">{</span>err<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>            sys.exit(<span class="dv">1</span>)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;Doc: </span><span class="sc">{</span>record<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<p>The command <code>dataset.init(c_name, dsn = "")</code>,
+<code>dataset.keys(c_name)</code>,
+<code>dataset.read(c_name, key)</code>
+<code>dataset.create(c_name, key)</code> are the main actors here. Most
+dataset methods require the collection name as the first parameter.
+Likewise many return some sort of value. If it is a boolean value than
+True means success and False means failure. If the method returns data
+then often it will be returned as a touple like with
+<code>read()</code>. If an error has occurred (e.g. permissions on disc
+raising a problem) you can retrieve the dataset error message by using
+the <code>error_message()</code> function. If you’re done with the error
+you can use <code>error_clear()</code> to reset the error message
+queue.</p>
+<p>Now check to see if the key, littlefreda, is in the collection</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>   dataset.has_key(c_name, <span class="st">&#39;littlefreda&#39;</span>)</span></code></pre></div>
+<p>You can also read your JSON formatted data from a file but you need
+to convert it first to a Python dict. In theses examples we are creating
+for Mojo Sam and Capt. Jack then reading back all the keys and
+displaying their paths and the JSON document created.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="st">&quot;mojosam.json&quot;</span>) <span class="im">as</span> f:</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>        src <span class="op">=</span> f.read().encoding(<span class="st">&#39;utf-8&#39;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        dataset.create(c_name, <span class="st">&quot;mojosam&quot;</span>, json.loads(src))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>   <span class="cf">with</span> <span class="bu">open</span>(<span class="st">&quot;capt-jack.json&quot;</span>) <span class="im">as</span> f:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      src <span class="op">=</span> f.read()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      dataset.create(<span class="st">&quot;capt-jack&quot;</span>, json.loads(src))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>   <span class="cf">for</span> key <span class="kw">in</span> dataset.keys(c_name):</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;Path: </span><span class="sc">{</span>dataset<span class="sc">.</span>path(c_name, key)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;Doc: </span><span class="sc">{</span>dataset<span class="sc">.</span>read(c_name, key)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&quot;&quot;</span>)</span></code></pre></div>
+<p>NOTE: In v2 of dataset there is no internal mechansim for filting and
+sorta keys. If you need that you should create a data frame, read the
+data frame out and manipulate it. Internal sorting and filtering just
+proved too slow.</p>
+</section>
+</body>
+</html>

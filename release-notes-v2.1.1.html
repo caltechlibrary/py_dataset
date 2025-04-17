@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+<!--    <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<h1 id="changes">changes</h1>
+<h1 id="function-signatures-and-names">function signatures and
+names</h1>
+<ul>
+<li><code>key_exists()</code> is renamed <code>has_key()</code></li>
+<li><code>frame_exists()</code> is renamed <code>has_frame()</code></li>
+<li><code>init()</code> now takes two parameters, the second one is a
+DSN (data name source, to use a SQL store instead of a pairtree)</li>
+<li><code>version()</code> is renamed <code>dataset_version()</code> to
+get the dataset version used for the library</li>
+<li><code>clone()</code>, <code>clone_sample()</code> now include dsn
+parameters after the collection names, you can clone into a different
+storage engine (e.g. Pairtree or SQL store).</li>
+</ul>
+<h1 id="behaviors">behaviors</h1>
+<ul>
+<li><code>delete()</code> removes all versions of an object</li>
+<li><code>prune()</code> removes all attachment versions</li>
+<li><code>path()</code> will return the path to a JSON document for
+collections using pairtree storage, otherwise it’ll return an empty
+string</li>
+</ul>
+<h1 id="versioning-has-been-overhauled-in-v2-of-dataset">versioning has
+been overhauled in v2 of dataset</h1>
+<p>Versioning is handle very differently in dataset v2.x than v1.x. The
+JSON objects stored can be versioned automatically based on the
+collection’s versioning setting. Versions are incremented automatically
+on create, update and attach for both JSON documents and attachments.
+Both <code>delete()</code> and <code>prune()</code> remove all objects
+including all versions of objects. This is because systems that version
+things tend to need “tomb stone” objects and placeholders.</p>
+<h1 id="additions">additions</h1>
+<ul>
+<li><code>read_version()</code> will retrieve a specific version of a
+JSON object</li>
+<li><code>object_versions()</code> will retrieve a list of object
+versions available</li>
+<li><code>attachment_versions()</code> will list of versions of an
+attachment</li>
+<li><code>detach_version()</code> will retrieve a specific version of an
+attachment</li>
+<li><code>set_versioning()</code> will set versioning for a
+collection</li>
+<li><code>get_versioning()</code> will get the current versioning
+setting for a collection</li>
+</ul>
+<h1 id="what-was-left-out">What was left out</h1>
+<p>The methods related to Namaste data have not be implememented as v2
+of dataset. Instead retrieve the codemeta.json file in the collection
+for metadata about the collection itself.</p>
+<h1 id="misc">Misc</h1>
+<p>Some tests fail on Windows 10 for libdataset. These will be addressed
+in future releases.</p>
+</section>
+</body>
+</html>

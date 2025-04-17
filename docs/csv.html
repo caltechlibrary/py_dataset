@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="working-with-csv">Working with CSV</h1>
+<p><a
+href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</a>
+files are commonly used to share data. Most spreadsheets and many
+database systems can export and import from CSV files. <em>datatset</em>
+can use a spreadsheet in CSV format to populate JSON objects in a
+collection. The header row of the CSV file will become the object
+attribute names and the rows will become their values. <em>dataset</em>
+requires a column of unique values to become the keys for the JSON
+objects stored in the collection.</p>
+<p>You can export CSV directly from a collection too. The paths to the
+elements in the objects become the header row and the values exported
+from the objects become the subsequent rows.</p>
+<pre><code>NOTE: In an upcoming release of data the specific command line 
+parameters and Python method definitions may change.  Now that 
+_dataset_ supports the concept of frames import and export to 
+a tabular structure (or even synchronizing with a tabular 
+structure) can be simplified. This document describes the current
+release method for working with CSV files.</code></pre>
+<h2 id="import-objects-from-a-csv-file">Import objects from a CSV
+file</h2>
+<p>You can import rows of a CSV document as JSON documents. This is
+useful when you have a large number of simple structures.</p>
+<p>In this example we have a simple CSV file containing the
+following</p>
+<pre class="csv"><code>    name,email
+    Zowie,zowie@zbs.example.org
+    Ralph Rolf,ralph.rolf@zbs.example.org
+    Mojo Sam,mojo.sam@zbs.example.org
+    Little Frieda,little.frieda@zbs.example.org
+    Far Seeing Art,old.art@zbs.example.org
+    Jack Flanders,captain.jack@zbs.example.org</code></pre>
+<p>Save this file as <em>characters.csv</em>. To import this let’s
+create a collection named <em>characters</em>.</p>
+<pre class="shell"><code>    # import dataset if you haven&#39;t already ...
+    #from py_dataset import dataset
+    dataset.init(&#39;characters-v1.ds&#39;)</code></pre>
+<p>Now we can populate our characters collection by importing
+<em>characters.csv</em>. Then look at the keys.</p>
+<pre class="shell"><code>    dataset.import(&#39;characters-v1.ds&#39;, &#39;characters.csv&#39;, 2)
+    dataset.keys(&#39;characeter-v1.ds&#39;)</code></pre>
+<p>Notice the assigned ids. We used the second column, the one with th
+email heading to be our keys.</p>
+<pre><code>    ralph.rolf@zbs.example.org
+    zowie@zbs.example.org
+    captain.jack@zbs.example.org
+    little.frieda@zbs.example.org
+    mojo.sam@zbs.example.org
+    old.art@zbs.example.org</code></pre>
+<pre class="shell"><code>    for key in dataset.keys(&#39;characters-v1.ds&#39;):
+       obj, err = dataset.read(&#39;characters-v1.ds&#39;, key)
+       if err != &#39;&#39;:
+           print(err)
+       print(obj)</code></pre>
+<p>Now let’s make a new version of our characters collection but this
+time we’ll column one (the name column) as the key.</p>
+<pre class="shell"><code>    dataset.init(&#39;characters-v2.ds&#39;)
+    dataset.import(&#39;characters-v2.ds&#39;, &#39;characters.csv&#39;, 1)
+    dataset.keys(&#39;characters-v2.ds&#39;)</code></pre>
+<p>Now our keys look a little different.</p>
+<pre><code></code></pre>
+<p>Reading the records back we see we have the JSON same document
+structure.</p>
+<pre class="shell"><code>    for key in dataset.keys(&#39;characters-v2.ds&#39;):
+       obj, err = dataset.read(&#39;characters-v2.ds&#39;, key)
+       if err != &#39;&#39;:
+           print(err)
+       print(obj)</code></pre>
+<p>Our records look like…</p>
+<pre><code>    {&quot;email&quot;:&quot;captain.jack@zbs.example.org&quot;,&quot;name&quot;:&quot;Jack Flanders&quot;}
+    {&quot;email&quot;:&quot;zowie@zbs.example.org&quot;,&quot;name&quot;:&quot;Zowie&quot;}
+    {&quot;email&quot;:&quot;ralph.rolf@zbs.example.org&quot;,&quot;name&quot;:&quot;Ralph Rolf&quot;}
+    {&quot;email&quot;:&quot;mojo.sam@zbs.example.org&quot;,&quot;name&quot;:&quot;Mojo Sam&quot;}
+    {&quot;email&quot;:&quot;little.frieda@zbs.example.org&quot;,&quot;name&quot;:&quot;Little Frieda&quot;}</code></pre>
+<h2 id="what-if-the-csv-file-has-no-header-row">What if the CSV file has
+no header row?</h2>
+<p>Let’s create a new collection and add “use-header-row=false”
+option.</p>
+<pre class="shell"><code>    c_name = &#39;characters-v4.ds&#39;
+    csv_file = &#39;characters.csv&#39;
+    id_col = 2
+    dataset.init(c_name)
+    dataset.import(c_name, csv_file, id_col, use_header_row = False)
+    keys = dataset.keys(c_name)
+    for key in keys:
+        obj, err = dataset.read(c_name, key)
+        if err != &#39;&#39;:
+            print(err)
+        print(obj)</code></pre>
+<p>Our ids were from column two so <code>keys()</code> should return a
+list like</p>
+<pre><code>    characters.csv_2
+    characters.csv_3
+    characters.csv_4
+    characters.csv_5
+    characters.csv_6
+    characters.csv_7
+    characters.csv_1</code></pre>
+<p>Our objects should look something like</p>
+<pre><code>    {&quot;col1&quot;:&quot;Zowie&quot;,&quot;col2&quot;:&quot;zowie@zbs.example.org&quot;}
+    {&quot;col1&quot;:&quot;Ralph Rolf&quot;,&quot;col2&quot;:&quot;ralph.rolf@zbs.example.org&quot;}
+    {&quot;col1&quot;:&quot;Mojo Sam&quot;,&quot;col2&quot;:&quot;mojo.sam@zbs.example.org&quot;}
+    {&quot;col1&quot;:&quot;Little Frieda&quot;,&quot;col2&quot;:&quot;little.frieda@zbs.example.org&quot;}
+    {&quot;col1&quot;:&quot;Far Seeing Art&quot;,&quot;col2&quot;:&quot;old.art@zbs.example.org&quot;}
+    {&quot;col1&quot;:&quot;Jack Flanders&quot;,&quot;col2&quot;:&quot;captain.jack@zbs.example.org&quot;}
+    {&quot;col1&quot;:&quot;name&quot;,&quot;col2&quot;:&quot;email&quot;}</code></pre>
+<p>Explore what you see.</p>
+<h1 id="imports-and-exports">imports and exports</h1>
+<h2 id="importing-data-into-a-collection">importing data into a
+collection</h2>
+<p>We can import data from a CSV file and store each row as a JSON
+document in dataset. You need to pick a column with unique values to be
+the key for each record in the collection. In this example we assume
+column one has the key value.</p>
+<pre class="shell"><code>    c_name = &#39;mydata.ds&#39;
+    csv_file = &#39;my-data.csv&#39;
+    id_col = 1
+    dataset.init(c_name)
+    dataset.import(c_name, csv_file, id_col)</code></pre>
+<p>You can create a CSV export by providing the dot paths for each
+column and then givening columns a name.</p>
+<h2 id="exporting-data-from-a-collection">exporting data from a
+collection</h2>
+<pre class="shell"><code>   csv_export = &#39;exported-my-data.csv&#39;
+   f_name = &#39;export-frame&#39;
+   keys = dataset.keys(c_name) 
+   dot_paths = [ &#39;.id&#39;, &#39;.title&#39;, &#39;.publication&#39;, &#39;.pubDate&#39; ]
+   labels = [ &#39;id&#39;, &#39;title&#39;, &#39;publication&#39;, &#39;date&#39; ]
+   dataset.frame_create(c_name, keys, f_name, dot_paths, labels)
+   dataset.export_csv(c_name, f_name, csv_export)</code></pre>
+<p>If you wanted to restrict to a subset (e.g. publication in year 2016)
+You just need to create a frame with that restriction.</p>
+<pre class="shell"><code>   keys_2016 = dataset.key_filter(c_name, keys,&#39;(eq 2016 (year .pubDate))&#39;)
+   f_name = &#39;published-2016&#39;
+   csv_export = &#39;export-published-2016.csv&#39;
+   dataset.frame_create(c_name, f_name, keys_2016, dot_paths, labels)
+   dataset.export(c_name, f_name, csv_exprot)</code></pre>
+</section>
+</body>
+</html>

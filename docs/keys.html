@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="keys">keys</h1>
+<p>Keys are used to add, update and retrieve JSON objects in your
+dataset collection. Individual keys must be unique. But how do you know
+what keys are in the collection? Use the <code>keys()</code> method.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    c_name <span class="op">=</span> <span class="st">&quot;characters.ds&quot;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(c_name)</span></code></pre></div>
+<p>Keys would now have all the keys in the collection named
+“characters.ds”. It is important to know that keys just returns the
+whole list. If you want a sorted list or a filtered list then you’ll
+want to use the <code>key_filter()</code> and <code>key_sort()</code>
+methods.</p>
+</section>
+</body>
+</html>

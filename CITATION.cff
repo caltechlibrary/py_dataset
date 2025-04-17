@@ -1,22 +1,38 @@
+
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+type: software
 title: py_dataset
+abstract: "A command line tool for working with JSON documents on local disc"
 authors:
   - family-names: Doiel
     given-names: Robert
     orcid: https://orcid.org/0000-0003-0900-6903
+    email: rsdoiel@caltech.edu
   - family-names: Morrell
     given-names: Thomas E
     orcid: https://orcid.org/0000-0001-9266-5146
-abstract: A command line tool for working with JSON documents on local disc
+    email: tmorrell@caltech.edu
+
+contacts:
+  - family-names: Doiel
+    given-names: R. S.
+    orcid: https://orcid.org/0000-0003-0900-6903
+    email: rsdoiel@caltech.edu
+  - family-names: Morrell
+    given-names: Thomas E
+    orcid: https://orcid.org/0000-0001-9266-5146
+    email: tmorrell@caltech.edu
+
 repository-code: "https://github.com/caltechlibrary/py_dataset"
-type: software
-version: 2.1.2
-license-url: "https://data.caltech.edu/license"
+version: 2.2.3.1
+date-released: 2025-04-17
+
+license-url: "https://github.com/caltechlibrary/py_dataset/blob/main/LICENSE"
 keywords:
   - GitHub
   - metadata
   - data
   - software
   - json
-date-released: 2023-09-27
+

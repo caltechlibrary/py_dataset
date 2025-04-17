@@ -19,7 +19,7 @@ maintainer:
     id: https://orcid.org/0000-0001-9266-5146
 
 repository_code: https://github.com/caltechlibrary/py_dataset
-version: 2.2.2
+version: 2.2.3.1
 license_url: https://github.com/caltechlibrary/py_dataset/blob/main/LICENSE
 
 programming_language:
@@ -32,15 +32,15 @@ keywords:
   - software
   - json
 
-
+date_released: 2025-04-17
 ---
 
 About this software
 ===================
 
-## py_dataset 2.2.2
+## py_dataset 2.2.3.1
 
-This release of py_dataset drops the support for the old C shared libraries available before v2.2.0. It implements a wrapper around the dataset command to perform a similar function.
+This patch adds missing dsquery support.
 
 ### Authors
 
@@ -71,5 +71,5 @@ A command line tool for working with JSON documents on local disc
 
 ### Software Requirements
 
-- dataset &gt;&#x3D; 2.2.2
+- dataset &gt;&#x3D; 2.2.3
 

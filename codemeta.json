@@ -51,8 +51,8 @@
     }
   ],
   "dateCreated": "2017-06-18",
-  "dateModified": "2025-04-16",
-  "datePublished": "2025-04-16",
+  "dateModified": "2025-04-17",
+  "datePublished": "2025-04-17",
   "description": "A command line tool for working with JSON documents on local disc",
   "funder": [
     "Caltech Library"
@@ -72,11 +72,11 @@
   "softwareRequirements": [
     "dataset >= 2.2.3"
   ],
-  "version": "2.2.3",
+  "version": "2.2.3.1",
   "developmentStatus": "active",
   "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/py_dataset/releases",
-  "releaseNotes": "This release of py_dataset drops the support for the old C shared libraries available before v2.2.0. It implements a wrapper around the dataset command to perform a similar function.",
+  "releaseNotes": "This patch adds missing dsquery support.",
   "copyrightYear": 2025,
   "copyrightHolder": "California Institute of Technology"
 }

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+<!--    <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="https://data.caltech.edu/badge/latestdoi/175684474"><img
+src="https://data.caltech.edu/badge/175684474.svg" alt="DOI" /></a></p>
+<h1 id="py_dataset">py_dataset</h1>
+<p>py_dataset is a Python wrapper for the <a
+href="https://github.com/caltechlibrary/dataset">dataset</a> command
+line tools. It replaces the depreciated libdataset a C shared library
+starting with the dataset 2.2.x release.</p>
+<p>This package wraps all <a href="docs/">dataset</a> operations such as
+initialization of collections, creation, reading, updating and deleting
+JSON objects in the collection. Some of its enhanced features include
+the ability to generate data <a href="docs/frame.html">frames</a> as
+well as the ability to import and export JSON objects to and from CSV
+files.</p>
+<p>py_dataset is release under a <a href="LICENSE">BSD</a> style
+license.</p>
+<h2 id="features">Features</h2>
+<p><a href="docs/">dataset</a> supports</p>
+<ul>
+<li>Basic storage actions (<a href="docs/create.html">create</a>, <a
+href="docs/read.html">read</a>, <a href="docs/update.html">update</a>
+and <a href="docs/delete.html">delete</a>)</li>
+<li>listing of collection <a href="docs/keys.html">keys</a> (including
+filtering and sorting)</li>
+<li>import/export of <a href="docs/csv.html">CSV</a> files.</li>
+<li>The ability to reshape data by performing simple object <a
+href="docs/join.html">join</a></li>
+<li>The ability to create data <a href="docs/frames.html">frames</a>
+from collections based on keys lists and <a href="docs/dotpath.html">dot
+paths</a> into the JSON objects stored</li>
+</ul>
+<p>See <a href="docs/">docs</a> for detials.</p>
+<h3 id="limitations-of-dataset">Limitations of <em>dataset</em></h3>
+<p><em>dataset</em> has many limitations, some are listed below</p>
+<ul>
+<li>it is not a multi-process, multi-user data store (it’s files on
+“disc” without locking)</li>
+<li>it is not a replacement for a repository management system</li>
+<li>it is not a general purpose database system</li>
+<li>it does not supply version control on collections or objects</li>
+</ul>
+<h2 id="install">Install</h2>
+<p>Available via pip <code>pip install py_dataset</code> or by
+downloading this repo and typing <code>python setup.py install</code>.
+This repo includes dataset shared C libraries compiled for Windows, Mac,
+and Linux and the appripriate library will be used automatically.</p>
+<h2 id="quick-tutorial">Quick Tutorial</h2>
+<p>This module provides the functionality of the <em>dataset</em>
+command line tool as a Python 3.10 module. Once installed try out the
+following commands to see if everything is in order (or to get familier
+with <em>dataset</em>).</p>
+<p>The “#” comments don’t have to be typed in, they are there to explain
+the commands as your type them. Start the tour by launching Python3 in
+interactive mode.</p>
+<pre class="shell"><code>    python3</code></pre>
+<p>Then run the following Python commands.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Almost all the commands require the collection_name as first paramter, </span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># we&#39;re storing that name in c_name for convienence.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    c_name <span class="op">=</span> <span class="st">&quot;a_tour_of_dataset.ds&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s create our a dataset collection. We use the method called </span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># &#39;init&#39; it returns True on success or False otherwise.</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    dataset.init(c_name)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s check to see if our collection to exists, True it exists</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># False if it doesn&#39;t.</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    dataset.status(c_name)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s count the records in our collection (should be zero)</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    cnt <span class="op">=</span> dataset.count(c_name)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(cnt)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s read all the keys in the collection (should be an empty list)</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(c_name)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(keys)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s add a record to our collection. To create a record we need to know</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># this collection name (e.g. c_name), the key (most be string) and have a </span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># record (i.e. a dict literal or variable)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    key <span class="op">=</span> <span class="st">&quot;one&quot;</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    record <span class="op">=</span> {<span class="st">&quot;one&quot;</span>: <span class="dv">1</span>}</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If create returns False, we can check the last error message </span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># with the &#39;error_message&#39; method</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.create(c_name, key, record):</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(dataset.error_message())</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s count and list the keys in our collection, we should see a count of &#39;1&#39; and a key of &#39;one&#39;</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    dataset.count(c_name)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(c_name)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(keys)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We can read the record we stored using the &#39;read&#39; method.</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    new_record, err <span class="op">=</span> dataset.read(c_name, key)</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> err <span class="op">!=</span> <span class="st">&#39;&#39;</span>:</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(err)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(new_record)</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s modify new_record and update the record in our collection</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    new_record[<span class="st">&quot;two&quot;</span>] <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.update(c_name, key, new_record):</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(dataset.error_message())</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s print out the record we stored using read method</span></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="co"># read returns a touple so we&#39;re printing the first one.</span></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(dataset.read(c_name, key)[<span class="dv">0</span>])</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Now let&#39;s query the collection.</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    sql_stmt <span class="op">=</span> <span class="ss">f&#39;&#39;&#39;select src from </span><span class="sc">{</span>c_name<span class="sc">}</span><span class="ss"> order by created desc&#39;&#39;&#39;</span></span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(dataset.query(c_name, sql_stmt))</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Finally we can remove (delete) a record from our collection</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.delete(c_name, key):</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(dataset.error_message())</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We should not have a count of Zero records</span></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>    cnt <span class="op">=</span> dataset.count(c_name)</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(cnt)</span></code></pre></div>
+</section>
+</body>
+</html>

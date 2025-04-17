@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="initailizing-a-dataset-collection">initailizing a dataset
+collection</h1>
+<p>You can create a dataset collection from Python using the
+<code>init()</code> function. You need to provided a file system
+friendly dataset name. Additional metadata can be added to the
+collection if you need it.</p>
+<h2 id="preamble">Preamble</h2>
+<p>The standard approach for using dataset is using the
+<code>from</code> notation for your import. The examples code assumes
+you’ve done this.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span></code></pre></div>
+<h2 id="init">init()</h2>
+<p>We need to have a collection name, e.g. <code>things.ds</code>. The
+extension “.ds” is a convension and is not enforced by the dataset
+library.</p>
+<pre><code>    # We&#39;re going to save our collection name for latter
+    c_name = &#39;things.ds&#39; 
+    dsn = &quot;&quot; # Use a pairtree to store the collection.
+    if not dataset.init(c_name, dsn):
+        print(dataset.error_message())</code></pre>
+<p>At this point you should have a directory (folder) on your file
+system called “things.ds” it will contain a collection.json file and
+several other JSON documents for managing the collection.</p>
+<h2 id="annotating-your-collection-with-metadata">Annotating your
+collection with metadata</h2>
+<p>When you create a new collection a “codemeta.json” file is created
+and placed in the root folder along side the “collection.json” file. You
+can edit the codemeta.json file directory to maintain metadata about the
+collection itself.</p>
+</section>
+</body>
+</html>

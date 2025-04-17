@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="delete">delete</h1>
+<p>Remove an object from a dataset collection.</p>
+<p>We need our usual pre-amble before using dataset.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> py_dataset <span class="im">import</span> dataset</span></code></pre></div>
+<p>Assuming that was done then our Python code is pretty simple to
+remove an object from a collection.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    c_name <span class="op">=</span> <span class="st">&#39;things.ds&#39;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    key <span class="op">=</span> <span class="st">&#39;thing-one&#39;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.delete(c_name, key):</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        err <span class="op">=</span> dataset.error_message()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&#39;failed to delete </span><span class="sc">{</span>key<span class="sc">}</span><span class="ss"> from </span><span class="sc">{</span>c_name<span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>err<span class="sc">}</span><span class="ss">&#39;</span>)</span></code></pre></div>
+<p>Note that ‘thing-one’ must exist in the collection ‘things.ds’. If
+not the <code>delete()</code> method returns False and you should hanlde
+the error.</p>
+<p>We can confirm the deletion with <code>has_key()</code></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.has_key(c_name, key):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&#39;somthing went wrong&#39;</span>)</span></code></pre></div>
+</section>
+</body>
+</html>

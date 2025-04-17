@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+<!--    <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<h1 id="developer-notes-for-py_dataset">Developer notes for
+py_dataset</h1>
+<p>py_dataset wraps <a
+href="https://github.com/caltechlibrary/dataset">dataset</a>’s
+libdataset. We try to keep the version of py_dataset in sync with the
+current release of dataset. <del>libdataset. When a new version of
+<em>dataset</em> and <em>libdataset</em> are release fetch the
+<code>libdataset-*.zip</code> archives and unzip them in
+<code>py_dataset/lib</code>. This should leave you with
+<code>libdataset.so</code> (Linux), <code>libdataset.dylib</code> (Mac
+OS X) and <code>libdataset.dll</code> (Windows) as well as
+<code>libdataset.h</code> (same for all three platforms). You will need
+to update <code>py_dataset/dataset.py</code> to include any changes you
+want to reflect in the shared library (e.g. add new functions). Once
+those twothings have been done you can use <code>python setup.py</code>
+to install your updates locally and test.</del></p>
+<p>For patches between dataset release we append a period and patch
+value to the semver that matched dataset’s release. E.g. the first patch
+to py_dataset paired with dataset 2.2.3 release would be 2.2.3.1. The
+second 2.2.3.2, etc.</p>
+<p>py_dataset is now built/managed using <a
+href="https://docs.astral.sh/uv/">uv</a>.</p>
+<h2 id="release-process">Release process</h2>
+<ul>
+<li><del>Update shared libraries in <code>py_dataset/lib</code>
+(e.g. <code>libdataset.so</code>, <code>libdataset.dynlib</code> and
+<code>libdataset.dll</code>)</del></li>
+<li>Update <code>py_dataset/dataset.py</code> and
+<code>py_dataset/libdataset.py</code> as needed</li>
+<li>Update version info in <code>codemeta.json</code>
+(e.g. <code>cme version releaseNotes dateModified datePublished -e</code>)</li>
+<li>Update README.md and DEVELOPER-NOTES.md</li>
+<li>Test and commit changes to the master branch in the git repo
+<ul>
+<li><code>uv run python3 test_dataset.py</code></li>
+</ul></li>
+<li>Make a github release if you’re happy with everything</li>
+<li>[optional] Push changes up to pypy</li>
+</ul>
+</section>
+</body>
+</html>

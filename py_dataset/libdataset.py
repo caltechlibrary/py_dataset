@@ -29,7 +29,7 @@ import subprocess
 
 # Find the paths to the dataset cli
 dataset = shutil.which('dataset')
-#dsquery = shutil.which('dsquery')
+dsquery = shutil.which('dsquery')
 #dsimporter = shutil.which('dsimporter')
 #datasetd = shutil.which('datasetd')
 
@@ -798,3 +798,19 @@ def get_versioning(c_name):
         return ''
     return src
 
+# query() return the result of running dsquery over the collection.
+#
+# Args: collection name, sql statement and any parameters
+# returns list of objects or None if an error is encountered (e.g.
+# an error in the SQL statement).
+def query(c_name, sql_stmt, params = []):
+    cmd = [dsquery, '-sql', '-', c_name ]
+    if len(params) > 0:
+        cmd += params
+    src, err = run_cli_input(cmd, sql_stmt)
+    if err != '':
+        errors.append(err)
+        return None
+    if src == None or src.strip() == '':
+        return []
+    return json.dumps(src)

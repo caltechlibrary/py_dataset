@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="read">read</h1>
+<p>The <code>read()</code> method retrieves an existing object from a
+collection returning the JSON document as a Python Dict. Actually
+<code>read()</code> returns a touple made of a python dict and an error
+message. If no error then the error message is an empty string.</p>
+<p>An example we’re assuming there is a JSON document with a KEY of
+“r1”. Our collection name is “data.ds”</p>
+<pre class="shell"><code>    c_name = &#39;data.ds&#39;
+    key = &#39;r1&#39;
+    obj, err = dataset.read(c_name, key)
+    if err != &#39;&#39;:
+        print(err)
+    else:
+        print(obj)</code></pre>
+</section>
+</body>
+</html>

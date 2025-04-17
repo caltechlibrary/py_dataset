@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<h1 id="query">query</h1>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>query(C_NAME, SQL_STATEMENT, [PARAMS])</p>
+<h1 id="description">DESCRIPTION</h1>
+<p><strong>query</strong> let’s your query a dataset collection using
+SQL. The SQLite dialect depends on the SQL store you chose when
+initializing the collection. If you used a SQLite3 protocol then it is
+the SQLite3 SQL dialect. If you chose Postgres then that dialect is
+expected.</p>
+<p>If you are have stored content using the venerable Pairtree then you
+need to “index” your collection before query will work. See the
+<code>-index</code> option on the <a
+href="https://caltechlibrary.github.io/dataset/dsquery.1.html">dsqery</a>
+tool for details.</p>
+<p>The schema is the same for all storage engines. The scheme for the
+JSON stored documents have a four column scheme. The columns are “_key”,
+“created”, “updated” and “src”. “_key” is a string (aka VARCHAR),
+“created” and “updated” are timestamps while “src” is a JSON column
+holding the JSON document. The table name reflects the collection name
+without the “.ds” extension (e.g. data.ds is stored in a database called
+data having a table also called data).</p>
+<p>The output of <strong>query</strong> is a list of objects. The order
+of the objects is determined by the your SQL statement and SQL
+engine.</p>
+<h1 id="parameters">PARAMETERS</h1>
+<dl>
+<dt>C_NAME</dt>
+<dd>
+If harvesting the dataset collection name to harvest the records to.
+</dd>
+<dt>SQL_STATEMENT</dt>
+<dd>
+The SQL statement should conform to the SQL dialect used for the JSON
+store for the JSON store (e.g. Postgres, MySQL and SQLite 3). The SELECT
+clause should return a single JSON object type per row.
+<strong>dsquery</strong> returns an JSON array of JSON objects returned
+by the SQL query.
+</dd>
+<dt>PARAMS</dt>
+<dd>
+Is optional, it is any values you want to pass to the SQL_STATEMENT.
+</dd>
+</dl>
+<h1 id="sql-store-scheme">SQL Store Scheme</h1>
+<dl>
+<dt>_key</dt>
+<dd>
+The key or id used to identify the JSON documented stored.
+</dd>
+<dt>src</dt>
+<dd>
+This is a JSON column holding the JSON document
+</dd>
+<dt>created</dt>
+<dd>
+The date the JSON document was created in the table
+</dd>
+<dt>updated</dt>
+<dd>
+The date the JSON document was updated
+</dd>
+</dl>
+<h1 id="examples">EXAMPLES</h1>
+<p>Generate a list of JSON objects with the <code>_key</code> value
+merged with the object stored as the <code>._Key</code> attribute. The
+colllection name “data.ds” which is implemented using Postgres as the
+JSON store. (note: in Postgres the <code>||</code> is very helpful).</p>
+<pre><code>c_name = &quot;data.ds&quot;
+sql_stmt = &quot;SELECT jsonb_build_object(&#39;_Key&#39;, _key)::jsonb || src::jsonb FROM data&quot;
+l = dataset.query(c_name, sql_stmt)
+if l == None:
+    err = dataset.error_messag()
+    print(f&#39;&#39;&#39;error {err}&#39;&#39;&#39;, file = sys.stderr, flush=True)
+    # handle the error
+print(l)</code></pre>
+<p>In this example we’re returning the “src” in our collection by
+querying for a “id” attribute in the “src” column. The id is passed in
+as an attribute using the Postgres positional notatation in the
+statement.</p>
+<pre><code>c_name = &quot;data.ds&quot;
+sql_stmt = &quot;SELECT src FROM data WHERE src-&gt;&gt;&#39;id&#39; = $1 LIMIT 1&quot; &quot;xx103-3stt9&quot;
+l = dataset.query(c_name, sql_stmt)
+if l == None:
+    err = dataset.error_messag()
+    print(f&#39;&#39;&#39;error {err}&#39;&#39;&#39;, file = sys.stderr, flush=True)
+    # handle the error
+print(l)</code></pre>
+</section>
+</body>
+</html>

@@ -1,8 +1,10 @@
 
-# py_dataset   [![DOI](https://data.caltech.edu/badge/175684474.svg)](https://data.caltech.edu/badge/latestdoi/175684474)
+[![DOI](https://data.caltech.edu/badge/175684474.svg)](https://data.caltech.edu/badge/latestdoi/175684474)
 
-py_dataset is a Python wrapper for the [dataset](https://github.com/caltechlibrary/dataset) 
-command line implementation. It replaces the depreciated libdataset a C shared library starting
+# py_dataset   
+
+py_dataset is a Python wrapper for the [dataset](https://github.com/caltechlibrary/dataset)
+command line tools. It replaces the depreciated libdataset a C shared library starting
 with the dataset 2.2.x release.
 
 This package wraps all [dataset](docs/) operations such 
@@ -109,6 +111,10 @@ Then run the following Python commands.
     # Let's print out the record we stored using read method
     # read returns a touple so we're printing the first one.
     print(dataset.read(c_name, key)[0])
+
+    # Now let's query the collection.
+    sql_stmt = f'''select src from {c_name} order by created desc'''
+    print(dataset.query(c_name, sql_stmt))
 
     # Finally we can remove (delete) a record from our collection
     if not dataset.delete(c_name, key):

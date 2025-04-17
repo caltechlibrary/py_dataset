@@ -10,6 +10,11 @@ from py_dataset import dataset
 # will stop test on first failure.
 fail_fast = True
 
+def reset_collection(c_name):
+    keys = dataset.keys(c_name)
+    for key in keys:
+        dataset.delete(c_name, key)
+
 #
 # test_basic(c_name) runs tests on basic CRUD ops
 # 
@@ -96,6 +101,7 @@ def test_basic(t, c_name):
 #
 def test_keys(t, c_name):
     '''test_keys(c_name) test getting, filter and sorting keys'''
+    reset_collection(c_name)
     # Test count after delete
     key_list = dataset.keys(c_name)
     cnt = dataset.count(c_name)
@@ -126,7 +132,7 @@ def test_keys(t, c_name):
     # Test keys
     all_keys = dataset.keys(c_name)
     if len(all_keys) != test_count:
-        t.error("Expected", test_count,"all_keys back, got", keys)
+        t.error("Expected", test_count,"all_keys back, got", all_keys)
     
 # test_issue12() https://github.com/caltechlibrary/py_dataset/issues/12
 # delete_frame() returns True but frame metadata still in memory.
@@ -585,83 +591,37 @@ def test_frame_objects(t, c_name):
         err = dataset.error_message()
         t.error(f'delete_frame({c_name}, {f_name}), {err}')
 
-# NOTE: sync_*_csv has be deprecated. It is now removed. RSD 2025-04-16
-#
-# test_sync_csv (issue 80) - add tests for sync_send_csv, sync_recieve_csv
-#
-# def test_sync_csv(t, c_name):
-#     # Setup test collection
-#     if os.path.exists(c_name):
-#         shutil.rmtree(c_name)
-#     if dataset.init(c_name, "") == False:
-#         err = dataset.error_message()
-#         t.error(f'init({c_name}) failed, {err}')
-#         return
+def test_query(t, c_name):
+    # Setup our collection to have some objects.
+    
+    objects = [
+        {"one": 1},
+        {"two": 2},
+        {"three": 3}
+    ]
+    for i, obj in enumerate(objects):
+        err = dataset.create(c_name, f'query_test:{i}', obj)
+        if err != '':
+            t.error(f'failed to add object {i} -> {obj} to {c_name}')
+            return
+    t_name = c_name.removesuffix('.ds')
+    # Just to test I'm listing all the objects's src attribute as a list
+    # ordered by descending updated timestamp.
+    sql_stmt = f'''select src
+from {t_name} 
+order by updated desc
+'''
+    l = dataset.query(c_name, sql_stmt)
+    if l == None:
+        err = dataset.error_message()
+        t.error(f'''got an errorr for
+~~~sql
+{sql_stmt}
+~~~
 
-#     # Setup test CSV instance
-#     t_data = [
-#             { "key": "one", "value": 1 },
-#             { "key": "two", "value": 2 },
-#             { "key": "three", "value": 3  }
-#     ]
-#     csv_name = c_name.strip(".ds") + ".csv"
-#     if os.path.exists(csv_name):
-#         os.remove(csv_name)
-#     with open(csv_name, 'w') as csvfile:
-#         csv_writer = csv.DictWriter(csvfile, fieldnames = ["key", "value" ])
-#         csv_writer.writeheader()
-#         for obj in t_data:
-#             csv_writer.writerow(obj)
-        
-#     # Import CSV into collection
-#     if dataset.import_csv(c_name, csv_name, True) == False:
-#         err = dataset.error_message()
-#         t.error(f'import_csv({c_name}, {csv_name}, True) failed, {err}')
-#         return
-#     for key in [ "one", "two", "three" ]:
-#         if dataset.has_key(c_name, key) == False:
-#             t.error(f"expected has_key({key}) == True, got False")
-#     if dataset.has_key(c_name, "five") == True:
-#         t.error(f"expected has_key('five') == False, got True")
-#     if dataset.create(c_name, "five", {"key": "five", "value": 5}) == False:
-#         err = dataset.error_message()
-#         t.error(f'create({c_name}, "five", {"value": 5}) failed, {err}')
-#         return
-
-#     # Setup frame
-#     frame_name = 'test_sync'
-#     keys = dataset.keys(c_name)
-#     if dataset.frame_create(c_name, frame_name, keys, [".key", ".value"], ["key", "value"] ) == False:
-#         err = dataset.error_message()
-#         t.error(f'frame_create({c_name}, {frame_name}, ...) failed, {err}')
-#         return
-
-#     #NOTE: Tests for sync_send_csv and sync_receive_csv
-#     if dataset.sync_send_csv(c_name, frame_name, csv_name) == False:
-#         err = dataset.error_message()
-#         t.error(f'sync_send_csv({c_name}, {frame_name}, {csv_name}) failed, {err}')
-#         return
-#     with open(csv_name) as fp:
-#         src = fp.read()
-#         if 'five' not in src:
-#             t.error(f"expected 'five' in src, got {src}")
-
-#     # Now remove "five" from collection
-#     if dataset.delete(c_name, "five") == False:
-#         err = dataset.error_message()
-#         t.error(f'delete({c_name}, "five") failed, {err}')
-#         return
-#     if dataset.has_key(c_name, "five") == True:
-#         t.error(f"expected has_key(five) == False, got True")
-#         return
-#     if dataset.sync_recieve_csv(c_name, frame_name, csv_name, False) == False:
-#         err = dataset.error_message()
-#         t.error(f'sync_receive_csv({c_name}, {frame_name}, {csv_name}) failed, {err}')
-#         return
-#     if dataset.has_key(c_name, "five") == False:
-#         t.error(f"expected has_key(five) == True, got False")
-#         return
-
+{err}''')
+    if len(l) < 3:
+        t.error(f'''expected three objects, got {l}''')
 
 #
 # Test harness
@@ -747,6 +707,7 @@ if __name__ == "__main__":
     test_runner = TestRunner(os.path.basename(__file__))
     test_runner.add(test_setup, [c_name])
     test_runner.add(test_basic, [c_name])
+    test_runner.add(test_query, [c_name])
     test_runner.add(test_keys, [c_name])
     test_runner.add(test_issue32, [c_name])
     test_runner.add(test_attachments, [c_name])
@@ -759,6 +720,7 @@ if __name__ == "__main__":
     test_runner.add(test_check_repair, ["test_check_and_repair.ds"])
     test_runner.add(test_clone_sample, ["test_collection.ds", 5, "test_training.ds", "", "test_test.ds", ""])
     test_runner.add(test_issue12, ['test_issue12.ds'])
+    test_runner.add(test_query, [c_name])
 
     test_runner.run()
 

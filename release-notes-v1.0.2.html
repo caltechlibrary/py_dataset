@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+<!--    <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<h1 id="release-note-for-v1.0.2-release">Release note for v1.0.2
+release</h1>
+<h2 id="changed-integrations">Changed integrations</h2>
+<p>The v2 development branch saw fundamental changed to the operation of
+dataset collection. It was a substantial rewrite of v1 abstracting how
+JSON objects are stored and versioned. v2 of datasat supports storing
+the JSON objects in a pairtree as well as leveraging SQL JSON support in
+SQLite3, MySQL 8 and PostgreSQL 14.</p>
+<p>The v2 development branch of dataset supports a different approach to
+version. This versioning can happen for both dataset records and for
+attachments. Version if enabled isn’t intended to be directly
+manipulated from libdataset derived libraries. The versioning approach
+is highly experimental and will likely change implementation in the v2
+branch as it gets used or abandoned. Versioning itself is set at the
+collection level, impacts both attachments and the JSON objects stored
+and will increment the version numbers either at the patch, minor or
+major semver values across the collection. Ideally if versioning is
+enabled (it is not by default) versioning happens automatically.</p>
+<p>The metadata JSON documents in the root collection folder have
+significantly changed between v1 and v2 of dataset. Metadata about the
+collection itself is now stored as a codemeta.json file in the root
+folder. Metadata needed to operation dataset is stored in a document
+called “collection.json”. There is a pairtree supporting storage of
+attachments called “attachments”, attachments can be versioned. There is
+a directory called “frames” that stores data frames.</p>
+<p>In dataset v2 the objects stored are no longer modified to include
+references to attachments and keys. If you need need explicit id
+attributes you need to modify the object before calling create or
+update. This means some of the conformance testing has changed.</p>
+<p>Since the <code>_Key</code> value is no longer injected into the
+object you need to provide data frames with an explicit object id if you
+wish that data exposed in the frame.</p>
+<h2 id="dropped-integrations">Dropped integrations</h2>
+<p>py_dataset no longer supports the v1.1 branch of dataset development.
+It now supports v2 branch of dataset development with the
+re-introduction of libdataset in v2.1. This allows us to integrate both
+a pairtree storage system for curating JSON document collections as well
+as use SQL engines supporting JSON columns such as SQLite 3, MySQL 8 and
+recent versions of PostgreSQL.</p>
+<h2 id="changed-function-names">Changed function names</h2>
+<ul>
+<li><code>init()</code> now takes two parameters, the first is the name
+of collection the second is a “dsn” value (i.e data source name as URI).
+If the dsn value is an empty string init will create a pairtree store
+collection (similar to v1 dataset collections). If a dsn URL is passed
+then it store the JSON documents in a SQL JSON column. Currently
+SQLite3, MySQL 8 and PostgreSQL 14 are supported. The attachements and
+frames are defined in the file system but under different directories
+than in v1 dataset.</li>
+<li><code>frames()</code> (for listing available frames) became
+<code>frame_names()</code></li>
+<li><code>frame_exists()</code> (for checking if a frame is defined)
+became <code>has_frame()</code></li>
+<li><code>key_exists()</code> (for checking if a key is defined) became
+<code>has_key()</code></li>
+<li><code>read()</code> nolonger takes a third parameter for
+<code>clean_object</code>, in v2 of dataset the JSON stored is NOT
+modified on create or update.</li>
+</ul>
+<h2 id="changes-in-return-values">Changes in return values</h2>
+<ul>
+<li><code>doc_path()</code> returns an empty string for non-pairtree
+dataset v2 collections (there is no document path since the JSON
+document is stored in a relational database).</li>
+<li><code>get_version()</code> returns the dataset version used to
+create/manage a collection, not the collection’s own version. Metadata
+for a collection is maintained in a codemeta.json document in the
+collection’s root folder.</li>
+</ul>
+<h2 id="dropped-functions">Dropped functions</h2>
+<ul>
+<li><code>key_filter()</code> and <code>key_sort()</code> have been
+removed to changes in collections and additional storage systems
+(e.g. pairtree stores and sql JSON stores) _ <code>make_objects()</code>
+is dropped, use <code>create_objects</code> instead</li>
+<li><code>set_version()</code> is dropped, Namaste isn’t being used for
+collection metadata, update the codemeta.json file instead</li>
+<li><code>set_who()</code>, <code>set_what()</code>,
+<code>set_where()</code>, <code>get_who()</code>,
+<code>get_what()</code> and <code>get_when()</code> dropped, Namaste
+isn’t being used for metadata on collections, update the codemeta.json
+file instread</li>
+<li><code>frame_grid()</code> has been dropped, work with frame lists
+and do you table conversion in Python (e.g. use Python’s excellent data
+science libraries)</li>
+</ul>
+</section>
+</body>
+</html>

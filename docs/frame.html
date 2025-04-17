@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="frame_create-and-frame-has_frame-frame_names">frame_create() and
+frame(), has_frame(), frame_names()</h1>
+<p>Data frames are a way of creating ordered subsets of JSON objects in
+a dataset collection. A data frame is defined by a list of keys from the
+collection, a list of dot paths into the objects of the collection and a
+list of labels for the objects aggregated inside the frame.</p>
+<p>The order of the objects in the frame match the order of the keys
+provided. The dot paths define the set of values to be applied to the
+labels provided. This provides a mechanism to change attribute names if
+desired.</p>
+<p>Frames can be retrieved in three ways, a full frame including its
+metadata, as a list of objects (more useful), or a 2D array where the
+object labels form the column headers (also useful).</p>
+<p>This command will define a data frame or return the contents and
+metadata of a defined frame. To define a new frame you need to provide a
+collection name, a frame name followed by a list of dotpath/label pairs.
+The labels are used as object attribute names and the dot paths as the
+source of data. You also need a list of keys.<br />
+By default the keys are read from standard input. With options you can
+include a specific file or even indicate to use all the keys in a
+collection. In this example we are creating a frame called
+“title-authors-year” based on the titles, authors and publication year
+from a dataset collection called <code>pubs.ds</code>. Note the labels
+of “Title”, “Authors”, “PubYear” are on the right side the an equal sign
+and the dot paths to the left.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    c_name <span class="op">=</span> <span class="st">&#39;pubs.ds&#39;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    f_name <span class="op">=</span> <span class="st">&#39;title-authors-year&#39;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    dot_paths <span class="op">=</span> [ <span class="st">&#39;.title&#39;</span>, <span class="st">&#39;.authors&#39;</span>, <span class="st">&#39;.publication_year&#39;</span> ]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> [ <span class="st">&#39;Title&#39;</span>, <span class="st">&#39;Authors&#39;</span>, <span class="st">&#39;PubYear&#39;</span> ]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> dataset.keys(c_name)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    dataset.frame_create(c_name,  f_name, keys, dot_paths, labels)</span></code></pre></div>
+<p>The objects in the frame’s object list will look like</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;Title&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;Authors&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;PubYear&quot;</span><span class="fu">:</span> <span class="er">...</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span></code></pre></div>
+<p>This allows you to create convient names for otherwise deep dot
+paths.</p>
+<p>If you want to see the full frame with all its metadata you can use
+the <code>frame()</code> method.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> dataset.frame(c_name, f_name)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(f)</span></code></pre></div>
+<p>Sometimes you want to see if a frame exists. Like checking for a key
+in a collection you can use the <code>has_frame()</code> to see if a
+frame exists in a collection.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> dataset.has_frame(c_name, <span class="st">&quot;my-frame&quot;</span>):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&#39;Frame exists&#39;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&quot;Frame is missing&quot;</span>)</span></code></pre></div>
+<p>To get a list of frames associated with a collection use
+<code>frame_names()</code>.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, frame_name <span class="kw">in</span> <span class="bu">enumerate</span>(dataset.frame_names(c_name)):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f&quot;</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss"> - </span><span class="sc">{</span>frame_name<span class="sc">}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+</section>
+</body>
+</html>

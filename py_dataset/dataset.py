@@ -363,3 +363,11 @@ def get_version(collection_name):
 def set_version(collection_name, versioning = ""):
     return libdataset.set_version(collection_name, versioning)
 
+# query applies an SQL statement that returns a list of objects.
+# SQL dialect must match the SQL implemementation (e.g. SQLite3
+# for an SQLite3 store, a PostgreSQL SQL for a Postgres store)
+#
+# Args: collection name, SQL startement, a list of parameters to
+# pass to the statement.
+def query(c_name, sql_stmt, params = []):
+    return libdataset.query(c_name, sql_stmt, params)

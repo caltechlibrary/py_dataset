@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="index.html">README</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="user_manual.html">User Manual</a></li>
+    <li><a href="about.html">About</a></li>
+<!--    <li><a href="search.html">Search</a></li> -->
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<h1 id="release-note-for-v0.1.2-release">Release note for v0.1.2
+release</h1>
+<h2 id="dropped-integrations">Dropped integrations</h2>
+<p>The following features were dropped in recent versions of dataset and
+that is now reflected in py_dataset.</p>
+<ul>
+<li>Google Sheet integration</li>
+<li>S3 and Google Cloud Storage support</li>
+</ul>
+<h2 id="dropped-functions">Dropped functions</h2>
+<ul>
+<li><code>grid()</code> has been dropped for effeciency reasons, instead
+create a frame and use <code>frame_grid()</code></li>
+</ul>
+<h2 id="changed-function-names">Changed function names</h2>
+<ul>
+<li><code>frame()</code> (for creation) became
+<code>frame_create()</code></li>
+<li><code>frame()</code> (for reading) returns whole frame with all
+metadata</li>
+<li><code>frame_objects()</code> returns the a list of objects in the
+frame</li>
+<li><code>frame_grid()</code> returns a 2D list of a frames
+objects.</li>
+<li><code>keys()</code> now returns all keys in the collection</li>
+<li><code>keys()</code> for filtering and sorting became
+<code>key_filter()</code> and <code>key_sort()</code></li>
+</ul>
+<h2 id="changes-in-return-values">Changes in return values</h2>
+<p>For functions that returned only an error message the return values
+have changed to True for success and False otherwise. You can retrieve
+the error text using the <code>error_message()</code> function. This was
+a simplification.</p>
+<p>Old code shape</p>
+<pre><code>    err = dataset.init(&#39;things.ds&#39;)
+    if err != &#39;&#39;:
+        print(err)</code></pre>
+<p>New code shape</p>
+<pre><code>    if dataset.init(&#39;things.ds&#39;) == False:
+        print(dataset.error_message())</code></pre>
+<p>Changed functions include <code>init()</code>, <code>create()</code>,
+<code>update()</code>, <code>delete()</code>, <code>detach()</code>,
+<code>prune()</code>, <code>join()</code>, <code>frame_reframe()</code>,
+<code>frame_refresh()</code>,</p>
+<p>Functions that returned a touple of object and err string will work
+the same as before (e.g. <code>read()</code>, <code>read_list()</code>,
+<code>frame_objects()</code>).</p>
+</section>
+</body>
+</html>

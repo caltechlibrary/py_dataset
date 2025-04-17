@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>py_dataset</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<nav>
+<ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="../">README</a></li>
+    <li><a href="../LICENSE">LICENSE</a></li>
+    <li><a href="../user_manual.html">User Manual</a></li>
+    <li><a href="../about.html">About</a></li>
+    <li><a href="../search.html">Search</a></li>
+    <li><a href="https://github.com/caltechlibrary/py_dataset">GitHub</a></li>
+</ul>
+</nav>
+<section>
+<p><a href="./">up</a></p>
+<h1 id="create">create</h1>
+<p>The <code>create()</code> method will add a new object to a
+collection. The collection needs to exist and the “key” used for the
+object needs to be unique.</p>
+<p>We assume our standard preamble.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>   <span class="im">from</span> py_dataset <span class="im">import</span> dataset </span></code></pre></div>
+<h2 id="creating-a-new-object.">Creating a new object.</h2>
+<p>We need three things, the collection name (e.g. “things.ds”), a key
+(e.g. “thing-one”), and a python dict which will become our JSON object
+on disc (e.g. <code>{"one": 1}</code>).</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    c_name <span class="op">=</span> <span class="st">&quot;things.ds&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    key <span class="op">=</span> <span class="st">&quot;thing-one&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    obj <span class="op">=</span> {<span class="st">&quot;one&quot;</span>: <span class="dv">1</span>}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># let&#39;s create our object and display any errors</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> dataset.create(c_name, key, obj):</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(dataset.error_message())</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Let&#39;s see if our object exists?</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> dataset.has_key(c_name, key):</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">&quot;Our object exists!&quot;</span>)</span></code></pre></div>
+<p>Note if you try to use the same key to store another object you’ll
+get an error.</p>
+<pre><code>    obj2 = {&quot;two&quot;: 2}
+    if not dataset.create(c_name, key, obj2):
+        print(f&quot;We should see an error {dataset.error_message()}&quot;)</code></pre>
+</section>
+</body>
+</html>
