@@ -8,7 +8,7 @@ The follow is documentation on using py_dataset.
 - dataset methods
   - [attachements](docs/attachments.md)
   - [create](docs/create.md)
-  - [delete]docs/delete.md)
+  - [delete](docs/delete.md)
   - [dot_path](docs/dot_path.md)
   - [frame](docs/frame.md)
   - [frame_objectss](docs/frame_objects.md)
