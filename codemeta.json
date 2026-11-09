@@ -53,7 +53,7 @@
   "dateCreated": "2017-06-18",
   "dateModified": "2025-04-17",
   "datePublished": "2025-04-17",
-  "description": "A command line tool for working with JSON documents on local disc",
+  "description": "NOTE: py_dataset is no longer being developed. A command line tool for working with JSON documents on local disc",
   "funder": [
     "Caltech Library"
   ],
@@ -73,7 +73,7 @@
     "dataset >= 2.2.3"
   ],
   "version": "2.2.3.1",
-  "developmentStatus": "active",
+  "developmentStatus": "inactive",
   "issueTracker": "https://github.com/caltechlibrary/py_dataset/issues",
   "downloadUrl": "https://github.com/caltechlibrary/py_dataset/releases",
   "releaseNotes": "This patch adds missing dsquery support.",

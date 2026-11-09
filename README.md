@@ -1,7 +1,10 @@
 
 [![DOI](https://data.caltech.edu/badge/175684474.svg)](https://data.caltech.edu/badge/latestdoi/175684474)
 
-# py_dataset   
+# py_dataset
+
+> **py_dataset is no longer being developed.** The repository is kept, archived,
+> as a historical record.
 
 py_dataset is a Python wrapper for the [dataset](https://github.com/caltechlibrary/dataset)
 command line tools. It replaces the depreciated libdataset a C shared library starting
